@@ -1,0 +1,41 @@
+// src/styles/main.scss
+
+@use "sass:color"; // 👈 Phải import thư viện này
+
+$primary-color: #2563eb;
+$border-radius: 6px;
+
+body {
+  background-color: #f9fafb;
+  font-family: 'Roboto', sans-serif;
+  color: #333;
+}
+
+button {
+  background-color: $primary-color;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: $border-radius;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: color.adjust($primary-color, $lightness: -10%); // 👈 Đúng
+  }
+}
+
+input,
+select,
+textarea {
+  border: 1px solid #ccc;
+  padding: 0.5rem;
+  width: 100%;
+  border-radius: $border-radius;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: $primary-color;
+    outline: none;
+  }
+}
