@@ -15,7 +15,7 @@ const FormField = ({ label, type = 'text', width = '50%', onUpdate, initialValue
     if (onUpdate) onUpdate({ value });
     console.log(value);
     console.log(onUpdate);
-    
+
   };
 
   const handleChange = (e) => {

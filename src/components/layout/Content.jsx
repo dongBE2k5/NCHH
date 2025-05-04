@@ -166,13 +166,14 @@ const Content = ({
                 draggable={isEditable}
                 onDragStart={isEditable && handleDragItemStart ? (e) => handleDragItemStart(item.id, e) : undefined}
                 onDragEnd={isEditable && handleDragItemEnd ? handleDragItemEnd : undefined}
-                className={`studentForm-wrapper ${isEditable ? 'relative group' : ''}`}
+                className={`studentForm-wrapper relative group`}
                 style={{ left: `${item.left}px`, top: `${item.top}px` }}
               >
                 <StudentForm
                   id={item.id}
                   onUpdate={isEditable && handleUpdate ? handleUpdate : undefined}
-                  items={item.value || {}}
+                  isEditable={isEditable}
+                  items={item.value}
                 />
                 {isEditable && handleDelete && (
                   <button

@@ -10,7 +10,7 @@ import FormField from './FormField';
 import Title from './Title';
 import Content from './Content';
 
-const Template = ({ items, setItems, onCreateNew }) => {
+const Template = ({ items, setItems, onCreateNew,setPosts  }) => {
   const canvasRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
   const [gridConfig, setGridConfig] = useState({
@@ -220,6 +220,10 @@ const Template = ({ items, setItems, onCreateNew }) => {
 
     console.log('Dữ liệu gửi đi:', postData.items);
 
+
+
+
+    
     try {
       await onCreateNew(postData.items);
       toast.success('Dữ liệu đã được gửi thành công!');
@@ -227,6 +231,7 @@ const Template = ({ items, setItems, onCreateNew }) => {
     } catch (error) {
       toast.error(`Gửi dữ liệu thất bại: ${error.message}`);
     }
+
   };
 
   return (

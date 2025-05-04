@@ -67,7 +67,7 @@ const DraggableCanvas = ({ items }) => {
   };
 
   return (
-    <div className="w-full space-y-4 flex flex-col items-center">
+    <div className="flex flex-col md:flex-row gap-6 max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen">
       <div className="w-full md:w-64 space-y-4">
         <button
           onClick={handlePrint}

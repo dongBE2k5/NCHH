@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import FormField from './FormField';
 
-const StudentForm = ({ id, onUpdate, items}) => {
+const StudentForm = ({ id, onUpdate, items, isEditable }) => {
   const [formData, setFormData] = useState({});
 
   // Hàm xử lý cập nhật dữ liệu
@@ -14,13 +14,15 @@ const StudentForm = ({ id, onUpdate, items}) => {
       onUpdate(id, { data: updatedData });
     }
   };
+  if (!isEditable) {
+    useEffect(() => {
+      if (items) {
+        setFormData(items); // Set the initial form data from the items prop
+        console.log("Nhận data", items);
+      }
+    }, [items]);
 
-  useEffect(() => {
-    if (items) {
-      setFormData(items); // Set the initial form data from the items prop
-      console.log("Nhận data", items);
-    }
-  }, [items]);
+  }
 
   return (
     <div className="contentStudent absolute inset-0">
