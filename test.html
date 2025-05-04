@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Document</title>
+</head>
+<body>
+    <div className="flex flex-col md:flex-row gap-6 max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen">
+        {/* Sidebar trái: Mẫu kéo và nút in */}
+        <div className="w-full md:w-64 space-y-4">
+          <div
+            id="template-input"
+            draggable
+            onDragStart={(e) => handleDragStart(e, 'new-item')}
+            className="w-full h-12 bg-orange-600 text-white text-center leading-12 font-medium rounded-lg shadow-md hover:bg-orange-700 cursor-grab select-none transition"
+          >
+            Mẫu Input
+          </div>
+          <div
+            id="template-textarea"
+            draggable
+            onDragStart={(e) => handleDragStart(e, 'new-textarea')}
+            className="w-full h-12 bg-orange-500 text-white text-center leading-12 font-medium rounded-lg shadow-md hover:bg-orange-600 cursor-grab select-none transition"
+          >
+            Mẫu Textarea
+          </div>
+          <button
+            onClick={handlePrint}
+            className="w-full px-4 py-2 bg-green-600 text-white font-medium rounded-lg shadow-md hover:bg-green-700 transition"
+          >
+            In Canvas
+          </button>
+        </div>
+  
+        {/* Khu vực phải: Form và Canvas */}
+        <form onSubmit={handleSubmit} className="w-full space-y-4 flex flex-col items-center">
+          <div
+            id="canvas"
+            ref={canvasRef}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            className="w-[794px] h-[1123px] bg-white border border-gray-200 rounded-lg shadow-lg relative"
+          >
+            <div className='QuocHieu'>
+            <h1> CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM</h1>
+            <h4> Độc lập - Tự do - Hạnh phúc</h4>
+            </div>
+           
+          </div>
+          <button
+            type="submit"
+            className="w-full md:w-64 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg shadow-md hover:bg-indigo-700 transition"
+          >
+            Tạo mới
+          </button>
+        </form>
+  
+</body>
+</html>

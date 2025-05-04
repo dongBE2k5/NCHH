@@ -20,7 +20,13 @@ import DraggableItem from "./pages/DraggableItem";
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import DraggablePage from "./components/layout/DraggablePage";
 import CrudTest from "./pages/CrudTest";
-import DraggableCanvas from "./components/layout/DraggableCanvas ";
+import DraggableCanvas from "./components/layout/DraggableCanvas";
+import Template from "./components/layout/Template";
+import ExportToWord from "./components/layout/ExportToWord ";
+import MyDocument from "./components/layout/MyDocument";
+import Call from "./components/layout/Call";
+import MyEditor from "./components/layout/MyEditor";
+import Submit from "./components/layout/Submit";
 
 
 
@@ -43,10 +49,13 @@ function App() {
         <Route path="/manage-forms" element={<ManageForms />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/dropandrop" element={<DropAndDrop />} />
-        <Route path="/draggableitem" element={<DraggablePage />}/>
-        <Route path="/crud" element={<CrudTest />}/>
-        <Route path="/canvas" element={<DraggableCanvas  />}/>
-   
+        <Route path="/draggableitem" element={<DraggablePage />} />
+        <Route path="/crud" element={<CrudTest />} />
+        <Route path="/canvas" element={<DraggableCanvas />} />
+        <Route path="/template" element={<Template />} />
+        <Route path="/word" element={<MyEditor />} />
+        <Route path="/nhan" element={<Submit />} />
+
       </Routes>
     </>
   )
