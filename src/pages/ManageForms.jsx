@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/NavbarComponent";
 import Table from "../components/Table";
 
 function ManageForms() {

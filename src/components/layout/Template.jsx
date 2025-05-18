@@ -10,7 +10,7 @@ import FormField from './FormField';
 import Title from './Title';
 import Content from './Content';
 
-const Template = ({ items, setItems, onCreateNew,setPosts  }) => {
+const Template = ({ items, setItems, onCreateNew, setPosts }) => {
   const canvasRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
   const [gridConfig, setGridConfig] = useState({
@@ -96,7 +96,7 @@ const Template = ({ items, setItems, onCreateNew,setPosts  }) => {
       newTop = Math.max(0, Math.min(newTop, 1123 - (type === 'input' ? 48 : 96)));
     } else {
       newLeft = startLeft;
-      if (type === 'nationalTitle' || type === 'title') {
+      if (type === 'nationalTitle') {
         newTop = Math.max(0, Math.min(newTop, 1123 - 50));
       } else {
         newTop = Math.max(0, Math.min(newTop, 1123 - 200));
@@ -172,7 +172,7 @@ const Template = ({ items, setItems, onCreateNew,setPosts  }) => {
         columns,
         columnRatios: columnRatiosArray,
         nestedConfig: nestedConfigObj,
-        value: {},
+        data: {},
       };
       setItems((prevItems) => [...prevItems, newGridItem]);
       setShowModal(false);
@@ -201,6 +201,7 @@ const Template = ({ items, setItems, onCreateNew,setPosts  }) => {
   };
 
   const handleSubmit = async (e) => {
+  
     e.preventDefault();
     if (!items || items.length === 0) {
       toast.warn('Không có dữ liệu để gửi, vui lòng thêm item!');
@@ -213,17 +214,12 @@ const Template = ({ items, setItems, onCreateNew,setPosts  }) => {
         value: item.type === 'nationalTitle'
           ? 'CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM - Độc lập - Tự do - Hạnh phúc'
           : item.type === 'studentForm'
-          ? item.data
-          : item.value,
+            ? item.data
+            : item.value,
       })),
     };
 
     console.log('Dữ liệu gửi đi:', postData.items);
-
-
-
-
-    
     try {
       await onCreateNew(postData.items);
       toast.success('Dữ liệu đã được gửi thành công!');
@@ -330,7 +326,8 @@ const Template = ({ items, setItems, onCreateNew,setPosts  }) => {
           />
         </div>
         <button
-          type="submit"
+          type="button"
+          onClick={handleSubmit}
           className="w-full md:w-64 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg shadow-md hover:bg-indigo-700 transition"
         >
           Tạo mới

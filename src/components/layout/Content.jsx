@@ -17,9 +17,7 @@ const Content = ({
 }) => {
   return (
     <div className="content" style={{ width: '623px', position: 'relative' }}>
-      <div className="title">
-        <h1>Tên Đơn</h1>
-      </div>
+   
       {(!items || items.length === 0) ? (
         <div className="absolute inset-0 flex items-center justify-center text-gray-500">
           Canvas trống. Vui lòng thêm các phần tử.
@@ -42,6 +40,7 @@ const Content = ({
                 <h4>Độc lập - Tự do - Hạnh phúc</h4>
                 {isEditable && handleDelete && (
                   <button
+                    type="button"
                     onClick={handleDelete}
                     className="absolute top-[-10px] right-[-10px] w-5 h-5 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-gray-400 hover:text-gray-800"
                   >
@@ -69,6 +68,7 @@ const Content = ({
                 />
                 {isEditable && handleDelete && (
                   <button
+                    type="button"
                     onClick={handleDelete}
                     className="absolute top-[-10px] right-[-10px] w-5 h-5 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-gray-400 hover:text-gray-800"
                   >
@@ -95,6 +95,7 @@ const Content = ({
                 />
                 {isEditable && handleDelete && (
                   <button
+                    type="button"
                     onClick={handleDelete}
                     className="absolute top-[-10px] right-[-10px] w-5 h-5 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-gray-400 hover:text-gray-800"
                   >
@@ -111,7 +112,7 @@ const Content = ({
                 onDragStart={isEditable && handleDragItemStart ? (e) => handleDragItemStart(item.id, e) : undefined}
                 onDragEnd={isEditable && handleDragItemEnd ? handleDragItemEnd : undefined}
                 className={`absolute border border-gray-300 rounded-lg p-2 bg-gray-50 ${isEditable ? 'cursor-grab relative group' : ''}`}
-                style={{ left: `${item.left}px`, top: `${item.top}px`, width: '623px' }}
+                style={{ left: `${item.left}px`, top: `${item.top}px`}}
               >
                 <DynamicGrid
                   id={item.id}
@@ -120,10 +121,11 @@ const Content = ({
                   columnRatios={item.columnRatios}
                   nestedConfig={item.nestedConfig}
                   onUpdate={isEditable && handleUpdate ? handleUpdate : undefined}
-                  initialValue={item.value || {}}
+                  initialValue={item.data || {}}
                 />
                 {isEditable && handleDelete && (
                   <button
+                    type="button"
                     onClick={handleDelete}
                     className="absolute top-[-10px] right-[-10px] w-5 h-5 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-gray-400 hover:text-gray-800"
                   >
@@ -139,8 +141,9 @@ const Content = ({
                 draggable={isEditable}
                 onDragStart={isEditable && handleDragItemStart ? (e) => handleDragItemStart(item.id, e) : undefined}
                 onDragEnd={isEditable && handleDragItemEnd ? handleDragItemEnd : undefined}
-                className={`absolute contentStudent ${isEditable ? 'cursor-grab relative group' : ''}`}
-                style={{ left: `${item.left}px`, top: `${item.top}px`, width: '623px' }}
+                // ${isEditable ? 'cursor-grab relative group' : ''}
+                className={`absolute contentStudent inset-0 `}
+                style={{ left: `${item.left}px`, top: `${item.top}px`}}
               >
                 <FormField
                   id={item.id}
@@ -151,6 +154,7 @@ const Content = ({
                 />
                 {isEditable && handleDelete && (
                   <button
+                    type="button"
                     onClick={handleDelete}
                     className="absolute top-[-10px] right-[-10px] w-5 h-5 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-gray-400 hover:text-gray-800"
                   >
@@ -173,10 +177,11 @@ const Content = ({
                   id={item.id}
                   onUpdate={isEditable && handleUpdate ? handleUpdate : undefined}
                   isEditable={isEditable}
-                  items={item.value}
+                  items={item.data}
                 />
                 {isEditable && handleDelete && (
                   <button
+                    type="button"
                     onClick={handleDelete}
                     className="absolute top-[-10px] right-[-10px] w-5 h-5 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-gray-400 hover:text-gray-800"
                   >
@@ -204,6 +209,7 @@ const Content = ({
                 />
                 {isEditable && handleDelete && (
                   <button
+                    type="button"
                     onClick={handleDelete}
                     className="absolute top-[-10px] right-[-10px] w-5 h-5 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-gray-400 hover:text-gray-800"
                   >

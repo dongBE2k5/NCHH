@@ -32,6 +32,9 @@ const FormField = ({ label, type = 'text', width = '50%', onUpdate, initialValue
         {label}:
         {isEditing ? (
           <input
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') e.preventDefault();
+            }}
             type={type}
             value={value}
             className="form-input"

@@ -4,7 +4,6 @@ function DynamicGrid({
   id,
   rows = 1,
   columns = 1,
-  renderCell,
   nestedConfig = {},
   columnRatios = [],
   onUpdate,
@@ -12,7 +11,6 @@ function DynamicGrid({
 }) {
   const [cellValues, setCellValues] = useState({});
 
-  // Áp dụng initialValue khi component được render hoặc initialValue thay đổi
   useEffect(() => {
     if (initialValue && typeof initialValue === 'object') {
       setCellValues(initialValue);
@@ -20,19 +18,15 @@ function DynamicGrid({
   }, [initialValue]);
 
   const parseRatios = (input) => {
-    if (Array.isArray(input)) {
-      return input.map(n => `${n}fr`);
-    }
-    if (typeof input === 'string') {
-      return input.trim().split(/\s+/).map(n => `${n}fr`);
-    }
+    if (Array.isArray(input)) return input.map(n => `${n}fr`);
+    if (typeof input === 'string') return input.trim().split(/\s+/).map(n => `${n}fr`);
     return [];
   };
 
   const parsedRatios = parseRatios(columnRatios);
-  const gridTemplateColumns = parsedRatios.length > 0 && parsedRatios.length === columns
+  const gridTemplateColumns = parsedRatios.length === columns && parsedRatios.length > 0
     ? parsedRatios.join(' ')
-    : `repeat(${columns}, 1fr)`; // Chia đều nếu columnRatios không hợp lệ hoặc rỗng
+    : `repeat(${columns}, 1fr)`;
 
   const parseNested = (configStr) => {
     const nums = configStr.trim().split(/\s+/).map(Number);
@@ -59,12 +53,11 @@ function DynamicGrid({
     }, [index, cellValues, defaultText]);
 
     const handleInput = () => {
-      const value = divRef.current.textContent;
+      const data = divRef.current.textContent;
       setCellValues(prev => {
-        const updatedValues = { ...prev, [index]: value };
-        console.log('Updated cellValues:', updatedValues);
+        const updatedValues = { ...prev, [index]: data };
         if (onUpdate) {
-          onUpdate(id, { value: updatedValues });
+          onUpdate(id, { data: updatedValues }); // Gửi data lên parent
         }
         return updatedValues;
       });

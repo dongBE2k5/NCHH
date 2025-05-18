@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/NavbarComponent";
 
 function Notifications() {
   const [notification, setNotification] = useState({ recipient: "", content: "" });

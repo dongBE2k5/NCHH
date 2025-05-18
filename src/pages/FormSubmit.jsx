@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/NavbarComponent";
 
 function FormSubmit() {
   const [formData, setFormData] = useState({ reason: "", duration: "1 học kỳ" });

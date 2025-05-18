@@ -8,7 +8,7 @@ import '../../assets/scss/Template.scss';
 
 const DraggableCanvas = ({ items }) => {
   const canvasRef = useRef(null);
-  console.log("Dữ liệu đã nhận",items);
+  // console.log("Dữ liệu đã nhận",items);
   
 
   const generatePDF = useReactToPrint({
