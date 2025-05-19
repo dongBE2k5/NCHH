@@ -10,6 +10,9 @@ import StaffDashboard from "./pages/StaffDashboard";
 import SearchStudent from "./pages/SearchStudent";
 import ManageForms from "./pages/ManageForms";
 import Notifications from "./pages/Notifications";
+import CustomLayout from "./pages/CustomLayout";
+import Preview from "./pages/Preview";
+import AddFieldForm from "./pages/AddFieldForm";
 
 function App() {
     return (
@@ -24,6 +27,9 @@ function App() {
             < Route path="/search" element={<SearchStudent />} />
             < Route path="/manage-forms" element={<ManageForms />} />
             < Route path="/notifications" element={<Notifications />} />
+            < Route path="/custom-layout" element={<CustomLayout />} />
+            < Route path="/preview" element={<Preview />} />
+            < Route path="/add-field-form" element={<AddFieldForm />} />
         </Routes>
     );
 }
