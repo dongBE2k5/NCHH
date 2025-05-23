@@ -5,11 +5,12 @@ const FormCustom = () => {
     const [selectedForm, setSelectedForm] = useState(null);
     const [customFields, setCustomFields] = useState([]);
     const [draggedItem, setDraggedItem] = useState(null);
-
+    const [isEdit, setIsEdit] = useState(false);
+    const [FieldEdit, setFieldEdit] = useState(null);
     useEffect(() => {
         const fetchTypeOfForm = async () => {
             try {
-                const response = await fetch('http://nckh.local/api/type-of-forms');
+                const response = await fetch('http://nckh.local/api/forms');
                 const data = await response.json();
                 setTypeOfForm(data);
             } catch (error) {
@@ -31,6 +32,38 @@ const FormCustom = () => {
         }
     };
 
+    const updateFieldForm = async (field) => {
+        console.log("Field" + JSON.stringify(customFields[0]));
+        console.log("Field" + typeof JSON.stringify(customFields[0].options));
+
+        try {
+            const res = await fetch(`http://nckh.local/api/forms/${selectedForm.id}/fields/${field.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(customFields[0])
+            })
+
+            if (!res.ok) throw new Error('Lỗi khi lấy danh sách trường');
+                setCustomFields([]);
+                fetchFieldList();
+
+        } catch (error) {
+            console.error('Lỗi khi cập nhật giao diện:', error);
+        }
+    };
+
+
+    const handleEditField = (field) => {
+        setIsEdit(true)
+        setFieldEdit(field)
+        setCustomFields(() => [
+            { data_type: `${field.data_type}`, label: `${field.label}`, options: field.options },
+        ]);
+
+    };
+
     const handleTypeFormChange = async (event) => {
         const typeId = event.target.value;
         if (typeId) {
@@ -49,12 +82,12 @@ const FormCustom = () => {
     const addCustomField = () => {
         setCustomFields((prevFields) => [
             ...prevFields,
-            { key: 'text', label: '', options: [] },
+            { data_type: 'text', label: '', options: [] },
         ]);
     };
 
     const storeCustomField = async (event) => {
-        event.preventDefault();
+            console.log(customFields);
         try {
             const response = await fetch(`http://nckh.local/api/forms/${selectedForm.id}`, {
                 method: 'POST',
@@ -63,9 +96,10 @@ const FormCustom = () => {
                 },
                 body: JSON.stringify({
                     type_of_form_id: selectedForm?.id,
-                    fields: customFields,
+                    fields: customFields
                 }),
             });
+        
 
             if (!response.ok) throw new Error('Lưu thất bại');
             await response.json();
@@ -151,7 +185,14 @@ const FormCustom = () => {
             <div className="flex flex-col mx-3 mt-6 lg:flex-row">
                 <div className="w-full lg:w-1/3 rounded-lg bg-white p-5 m-1">
                     <h2 className="text-xl font-semibold mb-4">Tạo Đơn Học Vụ</h2>
-                    <form onSubmit={storeCustomField}>
+                    <form onSubmit={(e) => {
+                        e.preventDefault();
+                        if (isEdit) {
+                            updateFieldForm(FieldEdit);
+                        } else {
+                            storeCustomField(e);
+                        }
+                    }}>
                         <label className="block text-gray-700">Loại đơn:</label>
                         <select
                             onChange={handleTypeFormChange}
@@ -166,12 +207,12 @@ const FormCustom = () => {
 
                         <div className="mt-4">
                             <h3 className="font-semibold text-gray-700">Thông tin bổ sung:</h3>
-                            {customFields.map((field, index) => (
+                            {customFields.map((field, index) => (     
                                 <div key={index} className="mt-2 p-3 bg-gray-50 rounded-lg">
                                     <label className="block text-gray-700">Kiểu dữ liệu:</label>
                                     <select
-                                        onChange={(e) => handleCustomFieldChange(index, 'key', e.target.value)}
-                                        value={field.key}
+                                        onChange={(e) => handleCustomFieldChange(index, 'data_type', e.target.value)}
+                                        value={field.data_type}
                                         className="border rounded-md p-2 w-full mt-1"
                                     >
                                         <option value="text">Text</option>
@@ -190,12 +231,14 @@ const FormCustom = () => {
                                         className="border rounded-md p-2 w-full mt-1"
                                         placeholder="Nhập giá trị"
                                     />
-
-                                    {['checkbox', 'radio'].includes(field.key) && (
+                               
+                                    {['checkbox', 'radio'].includes(field.data_type) && (
                                         <div className="mt-2">
                                             <label className="block text-gray-700">Tùy chọn (Options):</label>
                                             {(field.options || []).map((option, optIndex) => (
                                                 <div key={optIndex} className="flex items-center gap-2 mt-1">
+                                                    {console.log(optIndex)
+                                                    }
                                                     <input
                                                         type="text"
                                                         value={option}
@@ -256,7 +299,9 @@ const FormCustom = () => {
                             type="submit"
                             className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 mt-4 rounded-lg w-full"
                         >
-                            Lưu Đơn
+
+                            {isEdit ? " Lưu " : "Tạo"}
+
                         </button>
                     </form>
                 </div>
@@ -275,11 +320,12 @@ const FormCustom = () => {
                             >
                                 <p>{item.label}</p>
                                 <div className="flex gap-3">
-                                    <button onClick={() => alert('Sửa chưa triển khai')}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-pencil-square" viewBox="0 0 16 16">
-                                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293z" />
-                                            <path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
-                                        </svg>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleEditField(item)}
+                                        className="text-blue-600 hover:underline"
+                                    >
+                                        Sửa
                                     </button>
                                     <button onClick={() => deleteField(item.id)}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-trash3-fill" viewBox="0 0 16 16">
