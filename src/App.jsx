@@ -28,6 +28,11 @@ import Call from "./components/layout/Call";
 
 import SubmitApplication from "./components/layout/SubmitApplication";
 import ReceiveApplication from "./components/layout/ReceiveApplication";
+import HomeDemo from "./pages/HomePage";
+import HomePage from "./pages/HomePage";
+import FormListStudent from "./pages/Student/FormListStudent";
+import FormDetailStudent from "./pages/Student/FormDetailStudent";
+import MainLayout from "./components/layout/MainLayout";
 
 
 
@@ -39,7 +44,8 @@ function App() {
   return (
     <>
       <Routes >
-      {/* <Route path="/" element={<Home />} /> */}
+      <Route path="/" element={<MainLayout> <HomePage /> </MainLayout> } />
+      <Route path="/forms/:id" element={<MainLayout>  <FormDetailStudent /> </MainLayout> } />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<StudentDashboard />} />
         <Route path="/profile" element={<StudentProfile />} />
@@ -58,6 +64,7 @@ function App() {
 
         <Route path="/gui" element={<SubmitApplication />} />
             <Route path="/nhan" element={<ReceiveApplication />} />
+            <Route path="/form" element={<FormListStudent />} />
 
       </Routes>
     </>
