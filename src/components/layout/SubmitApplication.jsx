@@ -45,7 +45,7 @@ const SubmitApplication = () => {
     // const source = axios.CancelToken.source();
     // 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/post', newTemplate[0], {
+      const response = await axios.post('http://nckh.local/api/post', newTemplate[0], {
         // cancelToken: source.token,
       });
       setPosts((prevPosts) => [...prevPosts, response.data]);

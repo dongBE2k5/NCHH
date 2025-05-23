@@ -13,7 +13,7 @@ const ReceiveApplication = () => {
     const fetchPosts = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/get/${id}`);
+        const response = await axios.get(`http://nckh.local/api/get/${id}`);
         console.log(response.data);
          setPosts(response.data.items); 
         // setPosts((prevPosts) => [...prevPosts, response.data]); 

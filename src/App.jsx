@@ -33,6 +33,7 @@ import HomePage from "./pages/HomePage";
 import FormListStudent from "./pages/Student/FormListStudent";
 import FormDetailStudent from "./pages/Student/FormDetailStudent";
 import MainLayout from "./components/layout/MainLayout";
+import CreateFieldForm from "./pages/CreateFieldForm";
 
 
 
@@ -46,6 +47,7 @@ function App() {
       <Routes >
       <Route path="/" element={<MainLayout> <HomePage /> </MainLayout> } />
       <Route path="/forms/:id" element={<MainLayout>  <FormDetailStudent /> </MainLayout> } />
+      <Route path="/admin/forms" element={<MainLayout>  <CreateFieldForm /> </MainLayout> } />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<StudentDashboard />} />
         <Route path="/profile" element={<StudentProfile />} />
