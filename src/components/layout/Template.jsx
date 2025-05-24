@@ -50,18 +50,44 @@ const Template = ({ items, setItems, onCreateNew, setPosts }) => {
   const handleDrop = (e) => {
     e.preventDefault();
     const type = e.dataTransfer.getData('text/plain');
-    if (type === 'new-item' || type === 'new-textarea' || type === 'nationalTitle') {
+
+    if (type === 'new-item' || type === 'new-textarea' || type === 'nationalTitle' || type === 'signature') {
       const canvasRect = canvasRef.current.getBoundingClientRect();
-      const newLeft = e.clientX - canvasRect.left - 100;
+      const newLeft = e.clientX - canvasRect.left - 50;
       const newTop = e.clientY - canvasRect.top - 25;
+
+      const defaultSize = {
+        input: { width: 50, height: 48 },
+        textarea: { width: 100, height: 96 },
+        nationalTitle: { width: 600, height: 50 },
+        signature: { width: 150, height: 80 },
+      };
+
+      const itemType =
+        type === 'new-item' ? 'input' :
+          type === 'new-textarea' ? 'textarea' :
+            type === 'nationalTitle' ? 'nationalTitle' :
+              type === 'signature' ? 'signature' :
+                '';
+
+      const { width, height } = defaultSize[itemType];
+
       const newItem = {
         id: Date.now(),
-        type: type === 'new-item' ? 'input' : type === 'new-textarea' ? 'textarea' : 'nationalTitle',
-        left: Math.max(0, Math.min(newLeft, 623 - 200)),
-        top: Math.max(0, Math.min(newTop, 1123 - 50)),
-        value: type === 'new-item' ? 'Item' : type === 'new-textarea' ? 'Textarea' : null,
-        className: type === 'nationalTitle' ? 'nationalTitle' : '',
+        type: itemType,
+        left: Math.max(0, Math.min(newLeft, 623 - width)),
+        top: Math.max(0, Math.min(newTop, 1123 - height)),
+        width,
+        height,
+        value:
+          itemType === 'input'
+            ? 'Item'
+            : itemType === 'textarea'
+              ? 'Textarea'
+              : null,
+        className: itemType === 'nationalTitle' ? 'nationalTitle' : '',
       };
+
       setItems((prevItems) => [...prevItems, newItem]);
     }
   };
@@ -91,8 +117,8 @@ const Template = ({ items, setItems, onCreateNew, setPosts }) => {
     let newLeft = startLeft + deltaX;
     let newTop = startTop + deltaY;
 
-    if (type === 'input' || type === 'textarea') {
-      newLeft = Math.max(0, Math.min(newLeft, 623 - 192));
+    if (type === 'input' || type === 'textarea' || type === 'signature') {
+      newLeft = Math.max(0, Math.min(newLeft, 500));
       newTop = Math.max(0, Math.min(newTop, 1123 - (type === 'input' ? 48 : 96)));
     } else {
       newLeft = startLeft;
@@ -201,7 +227,7 @@ const Template = ({ items, setItems, onCreateNew, setPosts }) => {
   };
 
   const handleSubmit = async (e) => {
-  
+
     e.preventDefault();
     if (!items || items.length === 0) {
       toast.warn('Không có dữ liệu để gửi, vui lòng thêm item!');
@@ -230,6 +256,7 @@ const Template = ({ items, setItems, onCreateNew, setPosts }) => {
 
   };
 
+
   return (
     <div className="flex flex-col md:flex-row gap-6 max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen">
       <div className="w-full md:w-64 space-y-4">
@@ -242,6 +269,14 @@ const Template = ({ items, setItems, onCreateNew, setPosts }) => {
           Mẫu National Title
         </div>
         <div
+          id="template-signature"
+          draggable
+          onDragStart={(e) => handleDragStart(e, 'signature')}
+          className="w-full h-12 bg-purple-600 text-white text-center leading-12 font-medium rounded-lg shadow-md hover:bg-purple-700 cursor-grab select-none"
+        >
+          Mẫu signature
+        </div>
+        <div
           id="template-input"
           draggable
           onDragStart={(e) => handleDragStart(e, 'new-item')}
@@ -249,15 +284,19 @@ const Template = ({ items, setItems, onCreateNew, setPosts }) => {
         >
           Mẫu Input
         </div>
+
         <div
           id="template-textarea"
           draggable
+
           onDragStart={(e) => handleDragStart(e, 'new-textarea')}
           className="w-full h-12 bg-orange-500 text-white text-center leading-12 font-medium rounded-lg shadow-md hover:bg-orange-600 cursor-grab select-none"
         >
           Mẫu Textarea
         </div>
-        <button onClick={handleAddFormField} className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700">
+        <button
+          onClick={handleAddFormField}
+          className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700">
           Tạo FormField
         </button>
         <button onClick={handleAddStudentForm} className="w-full px-4 py-2 bg-green-600 text-white font-medium rounded-lg shadow-md hover:bg-green-700">
@@ -305,7 +344,8 @@ const Template = ({ items, setItems, onCreateNew, setPosts }) => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="w-full space-y-4 flex flex-col items-center">
+      <form className="w-full space-y-4 flex flex-col items-center">
+
         <div
           id="canvas"
           ref={canvasRef}

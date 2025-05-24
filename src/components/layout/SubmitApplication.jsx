@@ -1,73 +1,58 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import Template from './Template';
-import DraggableCanvas from './DraggableCanvas';
 
 const SubmitApplication = () => {
-  const [posts, setPosts] = useState([]);
-  const [items, setItems] = useState([
-
-  ]);
-  const [myTemplate, setMyTemplate] = useState([
-    {
-      id: Date.now(),
-      name: "",
-      templateItem: []
-    }
-  ]);
-
-
-  console.log("Template", myTemplate);
-
-  console.log('Dữ liệu nhận:', items);
-  const [selectedPost, setSelectedPost] = useState(null); // Để chọn bài viết hiển thị trong DraggableCanvas
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showNameForm, setShowNameForm] = useState(false);
+  const [templateName, setTemplateName] = useState('');
+  const [preparedData, setPreparedData] = useState(null);
 
+  // Bấm "Tạo mới" sẽ hiện form nhập tên
+  const handleCreateNew = () => {
+    if (items.length === 0) {
+      toast.error("Không có item nào để gửi");
+      return;
+    }
 
-
-
-  
-
-
-  const handleCreateNew = async () => {
-    setLoading(true);
-
-    const newTemplate = [{
+    // Lưu dữ liệu tạm vào state chờ gửi
+    setPreparedData({
       id: Date.now(),
-      name: 'hi ',
+      name: '',
       items: [...items]
-    }];
-    setMyTemplate(newTemplate);
-    console.log(newTemplate[0]);
+    });
+    setShowNameForm(true);
+  };
 
+  // Sau khi nhập tên và bấm Gửi
+  const handleSubmitName = async () => {
+    if (!templateName.trim()) {
+      toast.error('Vui lòng nhập tên');
+      return;
+    }
 
-    // const source = axios.CancelToken.source();
-    // 
+    const newTemplate = {
+      ...preparedData,
+      name: templateName.trim()
+    };
+
+    setLoading(true);
+    setShowNameForm(false);
+
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/post', newTemplate[0], {
-        // cancelToken: source.token,
-      });
-      setPosts((prevPosts) => [...prevPosts, response.data]);
+      const response = await axios.post('http://127.0.0.1:8000/api/post', newTemplate);
+      toast.success('Gửi dữ liệu thành công');
       setItems([]);
-      setSelectedPost(response.data);
-      console.log('Gửi dữ liệu thành công');
+      setTemplateName('');
+      setPreparedData(null);
     } catch (error) {
-      if (axios.isCancel(error)) {
-        console.log('Post request canceled:', error.message);
-      } else {
-        console.error('Có lỗi khi tạo bài viết:', error);
-        toast.error('Tạo bài viết thất bại');
-      }
+      console.error('Lỗi khi gửi dữ liệu:', error);
+      toast.error('Gửi dữ liệu thất bại');
     } finally {
       setLoading(false);
     }
-  };
-
-
-
-  const handleSelectPost = (post) => {
-    setSelectedPost(post);
   };
 
   return (
@@ -77,10 +62,43 @@ const SubmitApplication = () => {
           items={items}
           setItems={setItems}
           onCreateNew={handleCreateNew}
-          loading={loading} // Truyền loading để vô hiệu hóa nút "Tạo mới"
+          loading={loading}
         />
       </div>
-      
+
+      {showNameForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg w-80">
+            <h2 className="text-lg font-semibold mb-4">Nhập tên template</h2>
+            <input
+              type="text"
+              className="w-full border border-gray-300 rounded px-3 py-2 mb-4"
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+              placeholder="Tên template"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  setShowNameForm(false);
+                  setTemplateName('');
+                  setPreparedData(null);
+                }}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleSubmitName}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Gửi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {loading && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="text-white text-lg">Đang xử lý...</div>

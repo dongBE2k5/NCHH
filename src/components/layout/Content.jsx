@@ -15,9 +15,30 @@ const Content = ({
   handleDeleteItem,
   isEditable = true, // Mặc định là true để hỗ trợ chỉnh sửa trong Template
 }) => {
+const autoResizeHeight = (e) => {
+  const el = e.target;
+  el.style.height = 'auto'; // reset height để tính đúng scrollHeight
+  el.style.height = el.scrollHeight + 'px'; // set height bằng scrollHeight
+};
+
+
+
+
+  const autoResizeWith = (e) => {
+    e.target.style.width = 'auto';
+    const width = Math.min(Math.max(e.target.scrollWidth, 100), 623);
+    e.target.style.width = `${width}px`;
+  };
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
+  };
+
+
   return (
-    <div className="content" style={{ width: '623px', position: 'relative' }}>
-   
+    <div className="content  border border-transparent hover:border-gray-400 focus:border-gray-500 focus:outline-none" style={{ width: '623px', position: 'relative' }}>
+
       {(!items || items.length === 0) ? (
         <div className="absolute inset-0 flex items-center justify-center text-gray-500">
           Canvas trống. Vui lòng thêm các phần tử.
@@ -53,18 +74,21 @@ const Content = ({
             return (
               <div
                 key={item.id}
-                className={`absolute ${isEditable ? 'relative group' : ''}`}
+                className={`absolute ${isEditable ? 'group' : ''}`}
                 style={{ left: `${item.left}px`, top: `${item.top}px` }}
               >
                 <input
+                  onKeyDown={handleKeyDown}
                   type="text"
+                  onInput={autoResizeWith}
+                  maxLength={89}
                   value={item.value || ''}
                   onChange={isEditable && handleChange ? (e) => handleChange(item.id, e) : undefined}
                   readOnly={!isEditable}
                   draggable={isEditable}
                   onDragStart={isEditable && handleDragItemStart ? (e) => handleDragItemStart(item.id, e) : undefined}
                   onDragEnd={isEditable && handleDragItemEnd ? handleDragItemEnd : undefined}
-                  className={`w-48 h-12 bg-blue-600 text-white text-center text-base font-medium border-none outline-none rounded-md shadow-sm ${isEditable ? 'cursor-grab hover:bg-blue-700 transition' : ''}`}
+                  className={`w-auto ${isEditable ? 'cursor-grab border border-transparent hover:border-gray-400 focus:border-gray-500 focus:outline-none' : ''}`}
                 />
                 {isEditable && handleDelete && (
                   <button
@@ -81,17 +105,22 @@ const Content = ({
             return (
               <div
                 key={item.id}
-                className={`absolute ${isEditable ? 'relative group' : ''}`}
+                className={`absolute ${isEditable ? 'group' : ''}`}
                 style={{ left: `${item.left}px`, top: `${item.top}px` }}
               >
                 <textarea
+                  rows={1}
+                  onInput={autoResizeHeight}
                   value={item.value || ''}
                   onChange={isEditable && handleChange ? (e) => handleChange(item.id, e) : undefined}
                   readOnly={!isEditable}
                   draggable={isEditable}
                   onDragStart={isEditable && handleDragItemStart ? (e) => handleDragItemStart(item.id, e) : undefined}
                   onDragEnd={isEditable && handleDragItemEnd ? handleDragItemEnd : undefined}
-                  className={`w-48 h-24 bg-blue-600 text-white text-base font-medium border-none outline-none rounded-md shadow-sm p-2 ${isEditable ? 'cursor-grab hover:bg-blue-700 transition resize-y' : ''}`}
+                  className={`transition resize-y px-2 py-1 rounded  indent-6 ${isEditable
+                    ? 'cursor-grab border border-transparent hover:border-gray-400 focus:border-gray-500 focus:outline-none'
+                    : ''
+                    }`}
                 />
                 {isEditable && handleDelete && (
                   <button
@@ -109,10 +138,11 @@ const Content = ({
               <div
                 key={item.id}
                 draggable={isEditable}
+
                 onDragStart={isEditable && handleDragItemStart ? (e) => handleDragItemStart(item.id, e) : undefined}
                 onDragEnd={isEditable && handleDragItemEnd ? handleDragItemEnd : undefined}
-                className={`absolute border border-gray-300 rounded-lg p-2 bg-gray-50 ${isEditable ? 'cursor-grab relative group' : ''}`}
-                style={{ left: `${item.left}px`, top: `${item.top}px`}}
+                className={` dynamicGrid absolute  ${isEditable ? 'cursor-grab relative group' : ''}`}
+                style={{ left: `${item.left}px`, top: `${item.top}px` }}
               >
                 <DynamicGrid
                   id={item.id}
@@ -141,9 +171,8 @@ const Content = ({
                 draggable={isEditable}
                 onDragStart={isEditable && handleDragItemStart ? (e) => handleDragItemStart(item.id, e) : undefined}
                 onDragEnd={isEditable && handleDragItemEnd ? handleDragItemEnd : undefined}
-                // ${isEditable ? 'cursor-grab relative group' : ''}
-                className={`absolute contentStudent inset-0 `}
-                style={{ left: `${item.left}px`, top: `${item.top}px`}}
+                className={`absolute ${isEditable ? 'cursor-grabgroup' : ''}`}
+                style={{ left: `${item.left}px`, top: `${item.top}px` }}
               >
                 <FormField
                   id={item.id}
@@ -207,6 +236,33 @@ const Content = ({
                   onUpdate={isEditable && handleUpdate ? (data) => handleUpdate(item.id, data) : undefined}
                   initialValue={item.value}
                 />
+                {isEditable && handleDelete && (
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    className="absolute top-[-10px] right-[-10px] w-5 h-5 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-gray-400 hover:text-gray-800"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            );
+          }
+          else if (item.type === 'signature') {
+            return (
+              <div
+                key={item.id}
+                draggable={isEditable}
+                onDragStart={isEditable && handleDragItemStart ? (e) => handleDragItemStart(item.id, e) : undefined}
+                onDragEnd={isEditable && handleDragItemEnd ? handleDragItemEnd : undefined}
+                className={`signature absolute ${isEditable ? 'cursor-grab group' : ''}`}
+                style={{ left: `${item.left}px`, top: `${item.top}px` }}
+              >
+
+                <h3>Người làm đơn</h3>
+                <h4>(Ký và ghi rõ họ tên)</h4>
+
+
                 {isEditable && handleDelete && (
                   <button
                     type="button"
