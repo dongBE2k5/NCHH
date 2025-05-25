@@ -31,8 +31,20 @@ const ReceiveApplication = () => {
       if (!selectedId) return;
       setLoading(true);
       try {
+// <<<<<<< taiv2
+//         const response = await axios.get(`http://nckh.local/api/get/${id}`);
+//         console.log(response.data);
+//          setPosts(response.data.items); 
+//         // setPosts((prevPosts) => [...prevPosts, response.data]); 
+        
+//         console.log(posts);
+//         // console.log(posts.items);
+        
+//         console.log('Lấy danh sách bài viết thành công');
+// =======
         const response = await axios.get(`http://127.0.0.1:8000/api/get/${selectedId}`);
         setPosts(response.data.items || []);
+// >>>>>>> dong
       } catch (error) {
         toast.error('Lỗi khi lấy chi tiết template');
       } finally {

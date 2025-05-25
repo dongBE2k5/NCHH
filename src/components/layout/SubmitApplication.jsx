@@ -42,8 +42,15 @@ const SubmitApplication = () => {
     setShowNameForm(false);
 
     try {
+// <<<<<<< taiv2
+//       const response = await axios.post('http://nckh.local/api/post', newTemplate[0], {
+//         // cancelToken: source.token,
+//       });
+//       setPosts((prevPosts) => [...prevPosts, response.data]);
+// =======
       const response = await axios.post('http://127.0.0.1:8000/api/post', newTemplate);
       toast.success('Gửi dữ liệu thành công');
+// >>>>>>> dong
       setItems([]);
       setTemplateName('');
       setPreparedData(null);

@@ -18,7 +18,6 @@ import viteLogo from '/vite.svg';
 import './App.css'
 import DraggableItem from "./pages/DraggableItem";
 import { HTML5Backend } from 'react-dnd-html5-backend';
-
 import CrudTest from "./pages/CrudTest";
 import DraggableCanvas from "./components/layout/DraggableCanvas";
 import Template from "./components/layout/Template";
@@ -28,11 +27,17 @@ import Call from "./components/layout/Call";
 
 import SubmitApplication from "./components/layout/SubmitApplication";
 import ReceiveApplication from "./components/layout/ReceiveApplication";
-import HomeDemo from "./pages/HomePage";
+
 import HomePage from "./pages/HomePage";
 import FormListStudent from "./pages/Student/FormListStudent";
 import FormDetailStudent from "./pages/Student/FormDetailStudent";
 import MainLayout from "./components/layout/MainLayout";
+import CreateFieldForm from "./pages/Admin/CreateFieldForm";
+import PreviewForm from "./pages/PreviewForm";
+import CreateLayoutForm from "./pages/Admin/CreateLayoutForm";
+import LayoutAdmin from "./components/LayoutAdmin";
+import FormManagement from "./pages/Admin/FormManagement";
+
 
 
 
@@ -46,6 +51,11 @@ function App() {
       <Routes >
       <Route path="/" element={<MainLayout> <HomePage /> </MainLayout> } />
       <Route path="/forms/:id" element={<MainLayout>  <FormDetailStudent /> </MainLayout> } />
+      <Route path="/forms/:formID/preview-form/:id" element={<MainLayout>  <PreviewForm /> </MainLayout> } />
+      <Route path="/admin/forms" element={<LayoutAdmin>  <CreateFieldForm /> </LayoutAdmin> } />
+      <Route path="/admin/create-layout/:id" element={<LayoutAdmin>  <CreateLayoutForm /> </LayoutAdmin> } />
+      <Route path="/admin/form-management" element={<LayoutAdmin>  <FormManagement /> </LayoutAdmin> } />
+      <Route path="/admin" element={<LayoutAdmin />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<StudentDashboard />} />
         <Route path="/profile" element={<StudentProfile />} />

@@ -1,27 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from 'react-router-dom';
 
-const formData = {
-  id: 1,
-  name: "\u0110\u01a1n xin ngh\u1ec9 h\u1ecdc",
-  "form-model": "123",
-  field_form: [
-    { id: 9, data_type: "radio", label: "Gi\u1edbi t\u00ednh", options: ["Nam", "N\u1eef"], order: 1 },
-    { id: 10, data_type: "text", label: "H\u1ecd v\u00e0 t\u00ean", options: null, order: 2 },
-    { id: 11, data_type: "checkbox", label: "L\u00fd do ngh\u1ec9", options: ["B\u1ec7nh", "Vi\u1ec7c gia \u0111\u00ecnh", "Kh\u00e1c"], order: 3 },
-    { id: 12, data_type: "select", label: "L\u1edbp h\u1ecdc", options: ["10A1", "10A2", "10A3"], order: 4 },
-    { id: 13, data_type: "textarea", label: "Ghi ch\u00fa th\u00eam", options: null, order: 5 },
-    { id: 14, data_type: "date", label: "Ng\u00e0y xin ngh\u1ec9", options: null, order: 6 },
-  ],
-};
-
 export default function FormDetailStudent() {
   const [formState, setFormState] = useState({});
   const [fieldForm, setFieldForm] = useState(null);
   const { id } = useParams();
 
     useEffect(() => {
-    async function getAllForm() {
+    async function getFormDetail() {
         console.log("Id " + id);
         
         try {
@@ -41,7 +27,7 @@ export default function FormDetailStudent() {
     }
     
 
-    getAllForm();
+    getFormDetail();
 }, []);
     if (!fieldForm) {
         return <div className="text-center py-10">Đang tải biểu mẫu...</div>;
@@ -60,15 +46,32 @@ export default function FormDetailStudent() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Submitted:", formState);
+     try {
+            const response = await fetch(`http://nckh.local/api/submit-form/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formState),
+            });
+        
+
+            if (!response.ok) throw new Error('Lưu thất bại');
+            await response.json();
+            
+        } catch (error) {
+            console.error('Lỗi khi lưu form:', error);
+            alert('Có lỗi xảy ra khi lưu biểu mẫu.');
+        }
     alert("\u0110\u00e3 g\u1eedi \u0111\u01a1n th\u00e0nh c\u00f4ng!");
   };
 
   return (
     
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen pt-[72px] bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-10">
         <h2 className="text-4xl font-bold text-center text-blue-800 mb-10">
           {fieldForm.name}
