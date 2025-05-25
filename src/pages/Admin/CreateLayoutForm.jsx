@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css'; // Import CSS của Quill
 import PreviewForm from "../PreviewForm";
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 
 export default function CreateLayoutForm() {
@@ -15,7 +15,7 @@ export default function CreateLayoutForm() {
     const [htmlContent, setHtmlContent] = useState('');
     const { id } = useParams();
     const quillRef = useRef(null);
-
+    const navigate = useNavigate();
     useEffect(() => {
 
 
@@ -40,7 +40,9 @@ export default function CreateLayoutForm() {
 
                 const result = await response.json();
                 setDataForm(result);
-                console.log("Form detail: " + JSON.stringify(result.field_form));
+                console.log("Form detail: " + JSON.stringify(result['form-model']));
+                setContent(result['form-model']);
+                setHtmlContent(result['form-model']);
             } catch (error) {
                 console.error("Failed to fetch forms:", error);
             }
@@ -119,6 +121,10 @@ export default function CreateLayoutForm() {
                 setDataForm(data);
                 alert("Tạo thành công");
                 console.log(data);
+                // TODO:    redirect to form manage
+                navigate('/admin/form-management');
+
+
             })
             .catch((err) => console.error("Lỗi khi tải dữ liệu:", err));
     };
@@ -154,12 +160,12 @@ export default function CreateLayoutForm() {
                             />
 
                             {/* Hiển thị nội dung HTML */}
-                            <div className="mt-4">
+                            {/* <div className="mt-4">
                                 <h4 className="font-semibold">Mã HTML:</h4>
                                 <pre className="p-4 border rounded bg-gray-50">{htmlContent}</pre>
                             </div>
 
-                            Xem trước HTML
+                            Xem trước HTML */}
         <div className="mt-4">
           <h4 className="font-semibold">Xem trước:</h4>
           <div
@@ -175,7 +181,7 @@ export default function CreateLayoutForm() {
                             <PreviewForm html={htmlContent} /> */}
                         </div>
                         <button className="bg-blue-500 my-5 text-white px-4 py-2 rounded-md" type="submit">Save</button>
-                        <Link to={`/admin/preview-form/${id}`} className="bg-red-500 text-white px-4 py-2 rounded-md">Preview</Link>
+                        {/* <Link to={`/admin/preview-form/${id}`} className="bg-red-500 text-white px-4 py-2 rounded-md">Preview</Link> */}
                     </form>
                 </div>
             </div>

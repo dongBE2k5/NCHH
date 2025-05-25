@@ -51,7 +51,7 @@ function App() {
       <Routes >
       <Route path="/" element={<MainLayout> <HomePage /> </MainLayout> } />
       <Route path="/forms/:id" element={<MainLayout>  <FormDetailStudent /> </MainLayout> } />
-      <Route path="/preview-form/:id" element={<MainLayout>  <PreviewForm /> </MainLayout> } />
+      <Route path="/forms/:formID/preview-form/:id" element={<MainLayout>  <PreviewForm /> </MainLayout> } />
       <Route path="/admin/forms" element={<LayoutAdmin>  <CreateFieldForm /> </LayoutAdmin> } />
       <Route path="/admin/create-layout/:id" element={<LayoutAdmin>  <CreateLayoutForm /> </LayoutAdmin> } />
       <Route path="/admin/form-management" element={<LayoutAdmin>  <FormManagement /> </LayoutAdmin> } />

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { saveForm, deleteForm, updateForm } from '../../service/FormService';
+import { Link } from 'react-router-dom';
 
 const FormManagement = () => {
     const [formData, setFormData] = useState([]);
@@ -105,12 +106,13 @@ const FormManagement = () => {
                                             >
                                                 Delete
                                             </button>
-                                            <button
+                                            <Link
+                                                to={`/admin/create-layout/${item.id}`}
                                                 onClick={() => console.log('Create Layout', item.id)}
                                                 className="px-3 py-1 text-sm font-medium text-green-600 bg-green-50 border border-green-200 rounded hover:bg-green-100"
                                             >
-                                                Create Layout
-                                            </button>
+                                                Custom Layout
+                                            </Link>
                                         </div>
                                     </td>
                                 </tr>

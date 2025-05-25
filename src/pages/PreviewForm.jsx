@@ -17,16 +17,15 @@ const removeVietnameseTones = (str) => {
 
 
 function PreviewForm() {
-  const { id } = useParams();
+  const { formID, id } = useParams();
   const [html, setHtml] = useState('');
 
   useEffect(() => {
     async function fetchData() {
       try {
-        // Gọi song song 2 API
         const [detailRes, valueRes] = await Promise.all([
-          fetch(`http://nckh.local/api/forms/${id}`),
-          fetch(`http://nckh.local/api/preview-form/21`)
+          fetch(`http://nckh.local/api/forms/${formID}`),
+          fetch(`http://nckh.local/api/preview-form/${id}`)
         ]);
 
         if (!detailRes.ok || !valueRes.ok) throw new Error("Lỗi khi fetch dữ liệu");
