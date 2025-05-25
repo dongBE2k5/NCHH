@@ -39,4 +39,11 @@
       animation-delay: calc(0.1s * var(--index));
     }
 }
-
+.ql-editor p {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 2.5;
+  color: #000;
+  margin: 0;
+  padding: 0;
+}

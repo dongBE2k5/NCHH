@@ -181,8 +181,8 @@ const CreateFieldForm = () => {
     };
 
     return (
-        <div className="bg-gray-100 pt-[72px]">
-            <div className="flex flex-col mx-3 mt-6 lg:flex-row">
+        <div className="bg-gray-100 ">
+            <div className="flex flex-col min-h-[500px] mx-3 mt-6 lg:flex-row">
                 <div className="w-full lg:w-1/3 rounded-lg bg-white p-5 m-1">
                     <h2 className="text-xl font-semibold mb-4">Tạo Đơn Học Vụ</h2>
                     <form onSubmit={(e) => {
