@@ -49,13 +49,13 @@ function App() {
   return (
     <>
       <Routes >
-      <Route path="/" element={<MainLayout> <HomePage /> </MainLayout> } />
-      <Route path="/forms/:id" element={<MainLayout>  <FormDetailStudent /> </MainLayout> } />
-      <Route path="/forms/:formID/preview-form/:id" element={<MainLayout>  <PreviewForm /> </MainLayout> } />
-      <Route path="/admin/forms" element={<LayoutAdmin>  <CreateFieldForm /> </LayoutAdmin> } />
-      <Route path="/admin/create-layout/:id" element={<LayoutAdmin>  <CreateLayoutForm /> </LayoutAdmin> } />
-      <Route path="/admin/form-management" element={<LayoutAdmin>  <FormManagement /> </LayoutAdmin> } />
-      <Route path="/admin" element={<LayoutAdmin />} />
+        <Route path="/" element={<MainLayout> <HomePage /> </MainLayout>} />
+        <Route path="/forms/:id" element={<MainLayout>  <FormDetailStudent /> </MainLayout>} />
+        <Route path="/forms/:formID/preview-form/:id" element={<MainLayout>  <PreviewForm /> </MainLayout>} />
+        <Route path="/admin/forms" element={<LayoutAdmin>  <CreateFieldForm /> </LayoutAdmin>} />
+        <Route path="/admin/create-layout/:id" element={<LayoutAdmin>  <CreateLayoutForm /> </LayoutAdmin>} />
+        <Route path="/admin/form-management" element={<LayoutAdmin>  <FormManagement /> </LayoutAdmin>} />
+        <Route path="/admin" element={<LayoutAdmin />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<StudentDashboard />} />
         <Route path="/profile" element={<StudentProfile />} />
@@ -73,8 +73,8 @@ function App() {
         <Route path="/template" element={<Template />} />
 
         <Route path="/gui" element={<SubmitApplication />} />
-            <Route path="/nhan" element={<ReceiveApplication />} />
-            <Route path="/form" element={<FormListStudent />} />
+        <Route path="/nhan" element={<ReceiveApplication />} />
+        <Route path="/form" element={<FormListStudent />} />
 
       </Routes>
     </>

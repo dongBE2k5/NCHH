@@ -10,7 +10,7 @@ function FormList() {
       const data = [
         { title: "Đơn chuyển điểm", description: "Yêu cầu chuyển điểm từ môn học khác.", link: "/form/submit/transfer" },
         { title: "Đơn thôi học", description: "Yêu cầu thôi học tại trường.", link: "/form/submit/dropout" },
-        { title: "Đơn bảo lưu", description: "Yêu cầu bảo lưu kết quả học tập.", link: "/form/submit/reserve" },
+        { title: "Đơn bảo lưu", description: "Yêu cầu bảo lưu kết quả học tập.", link: "/nhan/1" },
       ];
       setForms(data);
     };

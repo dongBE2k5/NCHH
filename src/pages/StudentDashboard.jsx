@@ -6,6 +6,12 @@ function StudentDashboard() {
   const notifications = [
     "Đơn bảo lưu của bạn đã được duyệt (10:00, 25/04/2025).",
     "Hạn nộp đơn chuyển điểm: 30/04/2025.",
+    "Kết quả học tập học kỳ 1 đã được cập nhật (09:00, 20/05/2025).",
+    "Thời khóa biểu học kỳ 2 đã được công bố.",
+    "Bạn có 1 thông báo mới từ phòng đào tạo.",
+    "Đơn xin xác nhận sinh viên đã được xử lý.",
+    "Bạn còn 2 biểu mẫu chưa hoàn tất nộp.",
+    "Cập nhật quy định mới về thời gian nộp học phí.",
   ];
 
   return (
@@ -15,7 +21,7 @@ function StudentDashboard() {
         <h1 className="text-2xl font-bold mb-6">Xin chào, Nguyễn Văn A</h1>
         <div className="bg-white p-4 rounded-lg shadow mb-6">
           <h2 className="text-lg font-semibold mb-2">Thông báo</h2>
-          <ul className="list-disc pl-5">
+          <ul className="list-disc pl-5 space-y-1">
             {notifications.map((notification, index) => (
               <li key={index}>{notification}</li>
             ))}
