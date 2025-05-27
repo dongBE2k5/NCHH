@@ -6,18 +6,46 @@ function Login() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Xử lý đăng nhập (giả lập)
-    if (username === "student" && password === "123") {
-      navigate("/dashboard");
-    } else if (username === "admin" && password === "123") {
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        name: username, // hoặc `username` tùy API backend yêu cầu
+        password: password,
+      }),
+    });
+    console.log(response);
+    
+    if (!response.ok) {
+      throw new Error("Sai thông tin đăng nhập");
+    }
+
+    const data = await response.json();
+    console.log(data);
+    
+    // Lưu token nếu có
+    localStorage.setItem("token", data.access_token);
+       localStorage.setItem("token_type", data.token_type);
+       
+    console.log(window.localStorage);
+    
+    // Phân quyền nếu cần
+    if (data.user.role === "admin") {
       navigate("/admin");
     } else {
-      alert("Thông tin đăng nhập không đúng!");
+      navigate("/dashboard");
     }
-  };
-
+  } catch (error) {
+    alert("Đăng nhập thất bại: " + error.message);
+  }
+};
   return (
     <div className="bg-gray-100 flex items-center justify-center h-screen">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
