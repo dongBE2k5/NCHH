@@ -12,7 +12,8 @@ const FormManagement = () => {
 
     const fetchTypeOfForm = async () => {
         try {
-            const response = await fetch('http://nckh.local/api/forms');
+            // const response = await fetch('http://nckh.local/api/forms');
+            const response = await fetch('http://nckh.local/api/get');
             const data = await response.json();
             setFormData(data);
         } catch (error) {
@@ -71,7 +72,11 @@ const FormManagement = () => {
     return (
         <>
             <div className="p-6 bg-white rounded-xl shadow-md">
-                <button className="bg-blue-500 text-white px-4 py-2 ml-auto block rounded-md" onClick={() => setIsModalOpen(true)}  >New</button>
+                <Link 
+                to="/gui"
+                className="bg-blue-500 text-white px-4 py-2 ml-auto w-fit block rounded-md" 
+                //  onClick={() => setIsModalOpen(true)} 
+                  >New</Link>
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
@@ -106,13 +111,14 @@ const FormManagement = () => {
                                             >
                                                 Delete
                                             </button>
-                                            <Link
-                                                to={`/admin/create-layout/${item.id}`}
+                                            {/* <Link
+                                                // to={`/admin/create-layout/${item.id}`}
+                                                to={`/gui`}
                                                 onClick={() => console.log('Create Layout', item.id)}
                                                 className="px-3 py-1 text-sm font-medium text-green-600 bg-green-50 border border-green-200 rounded hover:bg-green-100"
                                             >
                                                 Custom Layout
-                                            </Link>
+                                            </Link> */}
                                         </div>
                                     </td>
                                 </tr>

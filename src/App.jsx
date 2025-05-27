@@ -37,6 +37,7 @@ import PreviewForm from "./pages/PreviewForm";
 import CreateLayoutForm from "./pages/Admin/CreateLayoutForm";
 import LayoutAdmin from "./components/LayoutAdmin";
 import FormManagement from "./pages/Admin/FormManagement";
+import FormRequest from "./pages/FormRequest";
 
 
 
@@ -66,7 +67,7 @@ function App() {
         <Route path="/search" element={<SearchStudent />} />
         <Route path="/manage-forms" element={<ManageForms />} />
         <Route path="/notifications" element={<Notifications />} />
-
+        <Route path="/admin/form-request" element={<LayoutAdmin> <FormRequest /> </LayoutAdmin>} />
 
         <Route path="/crud" element={<CrudTest />} />
         <Route path="/canvas" element={<DraggableCanvas />} />

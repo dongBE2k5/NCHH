@@ -13,7 +13,7 @@ const ReceiveApplication = () => {
   useEffect(() => {
     const fetchAllTemplates = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/api/get'); // API lấy danh sách tất cả template
+        const response = await axios.get('http://nckh.local/api/get'); // API lấy danh sách tất cả template
         setAllTemplates(response.data);
         if (response.data.length > 0) {
           setSelectedId(response.data[0].id); // mặc định chọn template đầu tiên
@@ -42,7 +42,7 @@ const ReceiveApplication = () => {
         
 //         console.log('Lấy danh sách bài viết thành công');
 // =======
-        const response = await axios.get(`http://127.0.0.1:8000/api/get/${selectedId}`);
+        const response = await axios.get(`http://nckh.local/api/get/${selectedId}`);
         setPosts(response.data.items || []);
 // >>>>>>> dong
       } catch (error) {

@@ -48,7 +48,7 @@ const SubmitApplication = () => {
 //       });
 //       setPosts((prevPosts) => [...prevPosts, response.data]);
 // =======
-      const response = await axios.post('http://127.0.0.1:8000/api/post', newTemplate);
+      const response = await axios.post('http://nckh.local/api/post', newTemplate);
       toast.success('Gửi dữ liệu thành công');
 // >>>>>>> dong
       setItems([]);
