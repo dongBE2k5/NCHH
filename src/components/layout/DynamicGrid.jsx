@@ -1,121 +1,76 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import DraggableCanvas from './DraggableCanvas';
 
-function DynamicGrid({
-  id,
-  rows = 1,
-  columns = 1,
-  nestedConfig = {},
-  columnRatios = [],
-  onUpdate,
-  initialValue,
-}) {
-  const [cellValues, setCellValues] = useState({});
+const ReceiveApplication = () => {
+  const [allTemplates, setAllTemplates] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (initialValue && typeof initialValue === 'object') {
-      setCellValues(initialValue);
-    }
-  }, [initialValue]);
-
-  const parseRatios = (input) => {
-    if (Array.isArray(input)) return input.map(n => `${n}fr`);
-    if (typeof input === 'string') return input.trim().split(/\s+/).map(n => `${n}fr`);
-    return [];
-  };
-
-  const parsedRatios = parseRatios(columnRatios);
-  const gridTemplateColumns = parsedRatios.length === columns && parsedRatios.length > 0
-    ? parsedRatios.join(' ')
-    : `repeat(${columns}, 1fr)`;
-
-  const parseNested = (configStr) => {
-    const nums = configStr.trim().split(/\s+/).map(Number);
-    return { innerRows: 1, innerColumns: nums.length, innerRatios: nums };
-  };
-
-  const EditableCell = ({ index, defaultText }) => {
-    const divRef = useRef(null);
-
-    const autoResize = () => {
-      const el = divRef.current;
-      if (el) {
-        el.style.height = 'auto';
-        el.style.height = `${el.scrollHeight}px`;
-      }
-    };
-
-    useEffect(() => {
-      const el = divRef.current;
-      if (el && !el.textContent) {
-        el.textContent = cellValues[index] || defaultText;
-      }
-      autoResize();
-    }, [index, cellValues, defaultText]);
-
-    const handleInput = () => {
-      const data = divRef.current.textContent;
-      setCellValues(prev => {
-        const updatedValues = { ...prev, [index]: data };
-        if (onUpdate) {
-          onUpdate(id, { data: updatedValues }); // Gửi data lên parent
+    const fetchAllTemplates = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/api/posts');
+        setAllTemplates(response.data);
+        if (response.data.length > 0) {
+          setSelectedId(response.data[0].id);
         }
-        return updatedValues;
-      });
+      } catch (error) {
+        toast.error('Lỗi khi lấy danh sách templates');
+      }
+    };
+    fetchAllTemplates();
+  }, []);
+
+  useEffect(() => {
+    const fetchTemplateDetail = async () => {
+      if (!selectedId) return;
+      setLoading(true);
+      try {
+        const response = await axios.get(`http://127.0.0.1:8000/api/get/${selectedId}`);
+        setPosts(response.data.items || []);
+      } catch (error) {
+        toast.error('Lỗi khi lấy chi tiết template');
+      } finally {
+        setLoading(false);
+      }
     };
 
-    return (
-      <div
-        ref={divRef}
-        contentEditable
-        suppressContentEditableWarning
-        style={{
-          minHeight: '24px',
-          padding: '4px',
-          outline: 'none',
-          whiteSpace: 'pre-wrap',
-          overflow: 'hidden',
-        }}
-        onInput={autoResize}
-        onBlur={handleInput}
-      />
-    );
-  };
+    fetchTemplateDetail();
+  }, [selectedId]);
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns, gap: '8px' }}>
-      {Array.from({ length: rows * columns }).map((_, index) => {
-        const configStr = nestedConfig[index];
-        const nested = configStr ? parseNested(configStr) : null;
+    <div className="flex flex-row gap-6 max-w-7xl mx-auto p-6">
+      {/* Cột trái: Select */}
+      <div className="w-64">
+        <label className="block mb-2 font-medium">Chọn template:</label>
+        <select
+          className="w-full border border-gray-300 px-4 py-2 rounded"
+          value={selectedId || ''}
+          onChange={(e) => setSelectedId(Number(e.target.value))}
+        >
+          {allTemplates.map((template) => (
+            <option key={template.id} value={template.id}>
+              {template.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
-        return (
-          <div key={index} style={{ border: '1px solid #ccc', padding: '0px' }}>
-            {nested ? (
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: parseRatios(nested.innerRatios).join(' '),
-                  gap: '4px',
-                }}
-              >
-                {nested.innerRatios.map((_, innerIndex) => (
-                  <EditableCell
-                    key={innerIndex}
-                    index={`${index}.${innerIndex}`}
-                    defaultText={cellValues[`${index}.${innerIndex}`] || `${index + 1}.${innerIndex + 1}`}
-                  />
-                ))}
-              </div>
-            ) : (
-              <EditableCell
-                index={index.toString()}
-                defaultText={cellValues[index.toString()] || `${index + 1}`}
-              />
-            )}
-          </div>
-        );
-      })}
+      {/* Cột phải: DraggableCanvas */}
+      <div className="flex-1 border border-gray-200 rounded p-4">
+        <DraggableCanvas items={posts} />
+      </div>
+
+      {loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="text-white text-lg">Đang tải dữ liệu...</div>
+        </div>
+      )}
     </div>
   );
-}
+};
 
-export default DynamicGrid;
+export default ReceiveApplication;

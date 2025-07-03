@@ -14,6 +14,7 @@ const Canvas = ({ items, onDragItem, onChangeItem, onDropItem, onDragOver, canva
       className="canvas w-[794px] h-[1123px] bg-white border border-gray-200 rounded-lg shadow-lg flex"
     >
       <div className="content" style={{ width: '623px', position: 'relative' }}>
+        
         <div className="title">
           <h1>Tên Đơn</h1>
         </div>
@@ -33,6 +34,20 @@ const Canvas = ({ items, onDragItem, onChangeItem, onDropItem, onDragOver, canva
                 >
                   <h2>CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM</h2>
                   <h4>Độc lập - Tự do - Hạnh phúc</h4>
+                </div>
+              );
+            case 'signature':
+              return (
+                <div
+                  key={item.id}
+                  draggable
+                  onDrag={(e) => onDragItem(item.id, e)}
+                  className="signature absolute cursor-grab"
+                  style={style}
+                  onChange={(e) => onChangeItem(item.id, e)}
+                >
+                  <h3>Người làm đơn</h3>
+                  <h4>(Ký và ghi rõ họ tên)</h4>
                 </div>
               );
             case 'input':
@@ -82,9 +97,11 @@ const Canvas = ({ items, onDragItem, onChangeItem, onDropItem, onDragOver, canva
                 <div
                   key={item.id}
                   draggable
+                   onChange={(e) => onChangeItem(item.id, e)}
                   onDrag={(e) => onDragItem(item.id, e)}
-                  className="absolute cursor-grab contentStudent"
-                  style={{ ...style, width: '623px' }}
+                  className="absolute cursor-grab "
+                  // style={{ ...style, width: '623px' }}
+                     style={style}
                 >
                   <FormField label={item.label} width={item.width} />
                 </div>
