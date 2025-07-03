@@ -4,15 +4,15 @@ import 'react-quill/dist/quill.snow.css';
 
 const removeVietnameseTones = (str) => {
   return str
-      .normalize("NFD") // Tách dấu khỏi ký tự gốc
-      .replace(/[\u0300-\u036f]/g, "") // Xóa dấu
-      .replace(/đ/g, "d")
-      .replace(/Đ/g, "D")
-      .replace(/\s+/g, " ") // Xóa khoảng trắng thừa
-      .trim()
-      .split(" ")
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // PascalCase
-      .join("");
+    .normalize("NFD") // Tách dấu khỏi ký tự gốc
+    .replace(/[\u0300-\u036f]/g, "") // Xóa dấu
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .replace(/\s+/g, " ") // Xóa khoảng trắng thừa
+    .trim()
+    .split(" ")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // PascalCase
+    .join("");
 };
 
 
@@ -72,17 +72,43 @@ function PreviewForm() {
 
     fetchData();
   }, [id]);
+  const handlePrint = () => {
+    const content = document.getElementById('print-area').outerHTML;
+    const currentDate = new Date().toLocaleDateString("vi-VN");
+    const printWindow = window.open('', '', 'width=900,height=1200');
+  
+    printWindow.document.write(`
+      <html>
+        <body>
+          <div style="text-align:right; margin-bottom: 20px;">Ngày in: ${currentDate}</div>
+          ${content}
+        </body>
+      </html>
+    `);
+  
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => printWindow.print(), 500);
+  };
 
   return (
     <div className="pt-[72px] w-1/2 mx-auto">
-      <div className="flex flex-col  ql-snow  py-16">
+      <div className="flex flex-col py-16 ql-snow">
         <h4 className="font-semibold mb-2">Xem trước:</h4>
         <div
-          className="ql-container ql-editor py-8 px-12  ql-snow  border rounded bg-gray-50"
+          id="print-area"
+          className="ql-container w-[822px] ql-editor py-8 px-12 ql-snow border rounded bg-gray-50"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       </div>
+      <button
+        onClick={handlePrint}
+        className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+      >
+        🖨️ In đơn
+      </button>
     </div>
+
   );
 }
 

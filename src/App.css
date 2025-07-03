@@ -47,3 +47,52 @@
   margin: 0;
   padding: 0;
 }
+
+.preview-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+.preview table {
+  width: 100%;
+  margin-top: 1rem;
+}
+.preview table p {
+  text-align: left;
+}
+
+.preview-content th,
+.preview-content td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+.preview-content th {
+  background-color: #f0f0f0;
+}
+
+
+.toolbar-btn {
+  padding: 6px;
+  border-radius: 6px;
+
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.toolbar-btn:hover {
+  background-color: #e4e4e7;
+}
+.editor .tiptap {
+  padding: 10px;
+  outline: none;
+  height: 100%;
+  text-align: left;
+}
+.ql-container table {
+  text-align: left;
+  width: 100%;
+}
+

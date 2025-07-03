@@ -1,190 +1,214 @@
 import React, { useState, useEffect, useRef } from "react";
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css'; // Import CSS của Quill
 import PreviewForm from "../PreviewForm";
+import { EditorContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Table from '@tiptap/extension-table';
+import TableRow from '@tiptap/extension-table-row';
+import TableCell from '@tiptap/extension-table-cell';
+import TableHeader from '@tiptap/extension-table-header';
+import UnderlineExtension from '@tiptap/extension-underline';
+import TextAlign from '@tiptap/extension-text-align';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-
+import {
+  Bold, Italic, Underline, Strikethrough, Heading1, Heading2,
+  List, ListOrdered, AlignLeft, AlignCenter, AlignRight, LinkIcon, Eraser, Table2
+} from 'lucide-react';
 
 export default function CreateLayoutForm() {
-    const [layout, setLayout] = useState([]);
-    const [previewLayout, setPreviewLayout] = useState([]);
-    const [previewMode, setPreviewMode] = useState(false);
-    const [counter, setCounter] = useState(4);
-    const [dataForm, setDataForm] = useState([]);
-    const [content, setContent] = useState("");
-    const [htmlContent, setHtmlContent] = useState('');
-    const { id } = useParams();
-    const quillRef = useRef(null);
-    const navigate = useNavigate();
-    useEffect(() => {
+  const [layout, setLayout] = useState([]);
+  const [dataForm, setDataForm] = useState([]);
+  const [htmlContent, setHtmlContent] = useState('');
+  const [rows, setRows] = useState(1);
+  const [cols, setCols] = useState(2);
+  const [showTableModal, setShowTableModal] = useState(false);
+  const { id } = useParams();
+  const navigate = useNavigate();
 
-
-        // fetch("http://nckh.local/api/get-field-form/1")
-        //   .then((res) => {
-        //     if (!res.ok) throw new Error("Network error");
-        //     return res.json();
-        //   })
-        //   .then((data) => setDataForm(data))
-        //   .catch((err) => console.error("Lỗi khi tải dữ liệu:", err));
-
-        async function getFormDetail() {
-            console.log("Id " + id);
-
-            try {
-                const url = `http://nckh.local/api/forms/${id}`;
-                const response = await fetch(url);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-                const result = await response.json();
-                setDataForm(result);
-                console.log("Form detail: " + JSON.stringify(result['form-model']));
-                setContent(result['form-model']);
-                setHtmlContent(result['form-model']);
-            } catch (error) {
-                console.error("Failed to fetch forms:", error);
-            }
-        }
-
-
-        getFormDetail();
-
-    }, []);
-    if (!dataForm) {
-        return <div className="text-center py-10">Đang tải biểu mẫu...</div>;
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      UnderlineExtension,
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Table.configure({ resizable: true }),
+      TableRow,
+      TableHeader,
+      TableCell,
+    ],
+    content: '',
+    onUpdate({ editor }) {
+      setHtmlContent(editor.getHTML());
     }
-    const insertVariableAtCursor = (text) => {
-        const editor = quillRef.current?.getEditor(); // Lấy instance của Quill
-        const range = editor?.getSelection();         // Lấy vị trí con trỏ
+  });
 
-        if (range) {
-            editor.insertText(range.index, text);     // Chèn text tại vị trí con trỏ
-            editor.setSelection(range.index + text.length); // Di chuyển con trỏ sau text mới
-        }
+  useEffect(() => {
+    const handleTabKey = (event) => {
+      if (event.key === 'Tab' && editor?.isFocused) {
+        event.preventDefault();
+        editor.commands.insertContent('    ');
+      }
     };
+    document.addEventListener('keydown', handleTabKey);
+    return () => document.removeEventListener('keydown', handleTabKey);
+  }, [editor]);
 
-    const removeVietnameseTones = (str) => {
-        return str
-            .normalize("NFD") // Tách dấu khỏi ký tự gốc
-            .replace(/[\u0300-\u036f]/g, "") // Xóa dấu
-            .replace(/đ/g, "d")
-            .replace(/Đ/g, "D")
-            .replace(/\s+/g, " ") // Xóa khoảng trắng thừa
-            .trim()
-            .split(" ")
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // PascalCase
-            .join("");
+  useEffect(() => {
+    const fetchFormDetail = async () => {
+      try {
+        const res = await fetch(`http://nckh.local/api/forms/${id}`);
+        const result = await res.json();
+        setDataForm(result);
+        editor?.commands.setContent(result['form-model'] || '');
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu:", error);
+      }
     };
+    fetchFormDetail();
+  }, [id, editor]);
 
-    const modules = {
-        toolbar: [
-            [{ header: [1, 2, false] }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            [{ align: [] }],
-            ['link', 'image'],
-            ['clean'],
-        ],
-    };
+  const insertTable = () => {
+    editor?.commands.insertTable({
+      rows: parseInt(rows),
+      cols: parseInt(cols),
+      withHeaderRow: false,
+    });
+  };
 
-    const formats = [
-        'header',
-        'bold', 'italic', 'underline', 'strike',
-        'list', 'bullet',
-        'align',
-        'link', 'image',
-    ];
+  const insertVariableAtCursor = (text) => {
+    editor?.commands.insertContent(text);
+    // Sau khi insert đưa con trỏ sau vị trí 
+    editor?.commands.focus();
+  };
 
-    const handleChange = (value) => {
-        setContent(value);
-        setHtmlContent(value);  // Lưu mã HTML vào state
-    };
+  const removeVietnameseTones = (str) => {
+    return str
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'D')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join('');
+  };
 
-    const storeForm = (e) => {
-        e.preventDefault();
-        fetch(`http://nckh.local/api/admin/create-layout-form/${id}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "form-model": htmlContent
-            })
-        })
-            .then((res) => {
-                if (!res.ok) throw new Error("Network error");
-                return res.json();
-            })
-            .then((data) => {
-                setDataForm(data);
-                alert("Tạo thành công");
-                console.log(data);
-                // TODO:    redirect to form manage
-                navigate('/admin/form-management');
+  const storeForm = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`http://nckh.local/api/admin/create-layout-form/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ "form-model": htmlContent })
+      });
+      const data = await res.json();
+      alert("Tạo thành công");
+      navigate('/admin/form-management');
+    } catch (err) {
+      console.error("Lỗi khi tải dữ liệu:", err);
+    }
+  };
 
-
-            })
-            .catch((err) => console.error("Lỗi khi tải dữ liệu:", err));
-    };
-
-
-    return (
-        <>
-            <div className="py-[72px] flex  gap-4">
-                <div className="w-1/4 mt-16">
-                    {dataForm.field_form?.map((item, index) => (
-                        <div className="my-5" key={index}>
-                            <button
-                                onClick={() => insertVariableAtCursor(`{{${removeVietnameseTones(item.label)}}}`)}
-                                className="bg-blue-500 text-white w-[100px] px-4 py-2 rounded-md"
-                            >
-                                {item.label}
-                            </button>
-                        </div>
-                    ))}
-                </div>
-                <div className="w-2/4">
-                    <form onSubmit={storeForm}>
-                        <div className="max-w-2xl mx-auto mt-6">
-                            {/* Editor Quill */}
-                            <ReactQuill
-                                ref={quillRef}
-                                value={content}
-                                onChange={handleChange}
-                                modules={modules}
-                                formats={formats}
-                                theme="snow"
-                                className="bg-white"
-                            />
-
-                            {/* Hiển thị nội dung HTML */}
-                            {/* <div className="mt-4">
-                                <h4 className="font-semibold">Mã HTML:</h4>
-                                <pre className="p-4 border rounded bg-gray-50">{htmlContent}</pre>
-                            </div>
-
-                            Xem trước HTML */}
-        <div className="mt-4">
-          <h4 className="font-semibold">Xem trước:</h4>
-          <div
-            className="ql-container ql-editor ql-snow p-4 border rounded bg-gray-50"
-            dangerouslySetInnerHTML={{
-              __html: htmlContent
-            }}  
-          />
+  return (
+    <div className="p-4 max-w-6xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4">📝 Trình soạn thảo tạo đơn</h2>
+      <div  className="flex gap-6">
+        <div className="w-1/4 space-y-2">
+          {dataForm.field_form?.map((item, index) => (
+            <button
+              key={index}
+              type="button"
+              onClick={() => insertVariableAtCursor(`{{${removeVietnameseTones(item.label)}}}`)}
+              className="bg-blue-500 text-white w-full px-4 py-2 rounded"
+            >
+              {item.label}
+            </button>
+          ))}
         </div>
-            {/* <PreviewForm
-              data={data}
-            ></PreviewForm>
-                            <PreviewForm html={htmlContent} /> */}
-                        </div>
-                        <button className="bg-blue-500 my-5 text-white px-4 py-2 rounded-md" type="submit">Save</button>
-                        {/* <Link to={`/admin/preview-form/${id}`} className="bg-red-500 text-white px-4 py-2 rounded-md">Preview</Link> */}
-                    </form>
-                </div>
+
+        <div className="w-3/4">
+          <div className="flex flex-wrap bg-white items-center p-3 gap-2 my-4">
+            <button onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()} className="toolbar-btn" title="H1">
+              <Heading1 size={18} />
+            </button>
+            <button onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()} className="toolbar-btn" title="H2">
+              <Heading2 size={18} />
+            </button>
+            <button onClick={() => editor?.chain().focus().toggleBold().run()} className="toolbar-btn" title="Bold">
+              <Bold size={18} />
+            </button>
+            <button onClick={() => editor?.chain().focus().toggleItalic().run()} className="toolbar-btn" title="Italic">
+              <Italic size={18} />
+            </button>
+            <button onClick={() => editor?.chain().focus().toggleUnderline().run()} className="toolbar-btn" title="Underline">
+              <Underline size={18} />
+            </button>
+            <button onClick={() => editor?.chain().focus().toggleStrike().run()} className="toolbar-btn" title="Strike">
+              <Strikethrough size={18} />
+            </button>
+            <button onClick={() => editor?.chain().focus().toggleBulletList().run()} className="toolbar-btn" title="Bullet List">
+              <List size={18} />
+            </button>
+            <button onClick={() => editor?.chain().focus().toggleOrderedList().run()} className="toolbar-btn" title="Ordered List">
+              <ListOrdered size={18} />
+            </button>
+            <button onClick={() => editor?.chain().focus().setTextAlign('left').run()} className="toolbar-btn" title="Left">
+              <AlignLeft size={18} />
+            </button>
+            <button onClick={() => editor?.chain().focus().setTextAlign('center').run()} className="toolbar-btn" title="Center">
+              <AlignCenter size={18} />
+            </button>
+            <button onClick={() => editor?.chain().focus().setTextAlign('right').run()} className="toolbar-btn" title="Right">
+              <AlignRight size={18} />
+            </button>
+            <button onClick={() => editor?.chain().focus().unsetAllMarks().clearNodes().run()} className="toolbar-btn" title="Clear">
+              <Eraser size={18} />
+            </button>
+            <button onClick={() => setShowTableModal(true)} className="toolbar-btn" title="Table">
+              <Table2 size={18} />
+            </button>
+          </div>
+
+          <div className="preview-content border border-gray-300 rounded p-3 min-h-[300px] h-fit mb-6 bg-white">
+            <EditorContent className="editor " editor={editor} />
+          </div>
+
+          {/* <div className="border-t pt-4 mb-6">
+            <h3 className="text-lg font-semibold mb-2">🔎 HTML Output</h3>
+            <div className="border border-gray-200 rounded bg-gray-50 p-3 text-sm whitespace-pre-wrap overflow-auto max-h-[200px]">
+              <code>{htmlContent}</code>
             </div>
-        </>
-    );
+          </div> */}
+
+          <div className="border-t pt-4">
+            <h3 className="text-lg font-semibold mb-2">📄 Xem trước đơn đang tạo</h3>
+            <div className="preview border border-gray-300 bg-white rounded p-6" dangerouslySetInnerHTML={{ __html: htmlContent }} />
+          </div>
+
+          <button onClick={storeForm} type="submit" className="mt-4 bg-green-600 text-white px-4 py-2 rounded">
+            Lưu biểu mẫu
+          </button>
+        </div>
+      </div>
+
+      {showTableModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-[300px] shadow-lg relative">
+            <h3 className="text-lg font-semibold mb-4">🧩 Chèn bảng</h3>
+            <label className="block mb-2">
+              Số hàng:
+              <input type="number" min="1" value={rows} onChange={(e) => setRows(e.target.value)} className="w-full mt-1 border px-2 py-1 rounded" />
+            </label>
+            <label className="block mb-4">
+              Số cột:
+              <input type="number" min="1" value={cols} onChange={(e) => setCols(e.target.value)} className="w-full mt-1 border px-2 py-1 rounded" />
+            </label>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setShowTableModal(false)} className="px-3 py-1 rounded border border-gray-400 hover:bg-gray-100">Hủy</button>
+              <button onClick={() => { insertTable(); setShowTableModal(false); }} className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Tạo bảng</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
