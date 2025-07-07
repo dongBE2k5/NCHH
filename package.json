@@ -38,6 +38,8 @@
     "jspdf": "^3.0.1",
     "konva": "^9.3.20",
     "lucide-react": "^0.525.0",
+    "primeicons": "^7.0.0",
+    "primereact": "^10.9.6",
     "react": "^18.3.1",
     "react-beautiful-dnd": "^13.1.1",
     "react-dnd": "^16.0.1",

@@ -51,7 +51,7 @@ function PreviewForm() {
           const label = fieldIdToLabel[item.field_form_id];
           if (label) {
             labelToValue[label] = item.value;
-            console.log("labelToValue: " + JSON.stringify(labelToValue));
+            // console.log("labelToValue: " + JSON.stringify(labelToValue));
           }
         });
 
@@ -60,7 +60,7 @@ function PreviewForm() {
         for (const [key, value] of Object.entries(labelToValue)) {
           const regex = new RegExp(`{{${key}}}`, 'g');
           replacedHtml = replacedHtml.replace(regex, value);
-          console.log("replacedHtml: " + replacedHtml);
+          // console.log("replacedHtml: " + replacedHtml);
         }
 
         setHtml(replacedHtml);

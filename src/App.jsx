@@ -38,6 +38,10 @@ import CreateLayoutForm from "./pages/Admin/CreateLayoutForm";
 import LayoutAdmin from "./components/LayoutAdmin";
 import FormManagement from "./pages/Admin/FormManagement";
 
+// PrimeReact core
+import 'primereact/resources/themes/lara-light-blue/theme.css';  // hoặc đổi sang theme khác
+import 'primereact/resources/primereact.min.css';                // Core styles
+import 'primeicons/primeicons.css';                              // Icons
 
 
 
