@@ -9,6 +9,40 @@ const FormManagement = () => {
     const [refresh, setRefresh] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
     const [formId, setFormId] = useState('');
+    const [file, setFile] = useState(null);
+    const [message, setMessage] = useState('');
+
+    const handleFileChange = (e) => {
+        setFile(e.target.files[0]);
+    };
+    const handleUpload = async () => {
+        if (!file) {
+            setMessage('Vui lòng chọn file .docx');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('doc_file', file);
+
+        try {
+            const response = await fetch('http://nckh.local/api/upload-docx1', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await response.json();
+            console.log(data);
+
+            if (response.ok) {
+                setMessage('Upload thành công: ' + data.message);
+            } else {
+                setMessage('Upload thất bại: ' + (data.message || 'Lỗi không xác định'));
+            }
+        } catch (error) {
+            console.error('Upload lỗi:', error);
+            setMessage('Lỗi khi upload');
+        }
+    };
 
     const fetchTypeOfForm = async () => {
         try {
@@ -26,42 +60,42 @@ const FormManagement = () => {
     }, []);
     const handleSaveForm = async () => {
         saveForm(formName)
-        .then(() => {
-            // TODO: fetch form data again
-            setRefresh(!refresh);
-            setFormName('');
-        })
-        .catch((error) => {
-            console.error('Error saving form:', error);
-        });
+            .then(() => {
+                // TODO: fetch form data again
+                setRefresh(!refresh);
+                setFormName('');
+            })
+            .catch((error) => {
+                console.error('Error saving form:', error);
+            });
     }
 
     const handleDeleteForm = async (formId) => {
         deleteForm(formId)
-        .then(() => {
-            setRefresh(!refresh);
-        })
-        .catch((error) => {
-            console.error('Error deleting form:', error);
-        });
-    }   
+            .then(() => {
+                setRefresh(!refresh);
+            })
+            .catch((error) => {
+                console.error('Error deleting form:', error);
+            });
+    }
 
     const handleEditForm = async (formId) => {
         setIsEdit(true);
         setIsModalOpen(true);
         setFormId(formId);
         setFormName(formData.find(item => item.id === formId).name);
-    }   
+    }
 
     const handleUpdateForm = async (formId) => {
         setIsModalOpen(false);
         updateForm(formId, formName)
-        .then(() => {
-            setRefresh(!refresh);
-        })
-        .catch((error) => {
-            console.error('Error deleting form:', error);
-        });
+            .then(() => {
+                setRefresh(!refresh);
+            })
+            .catch((error) => {
+                console.error('Error deleting form:', error);
+            });
     }
 
     useEffect(() => {
@@ -72,11 +106,11 @@ const FormManagement = () => {
     return (
         <>
             <div className="p-6 bg-white rounded-xl shadow-md">
-                <Link 
-                to="/gui"
-                className="bg-blue-500 text-white px-4 py-2 ml-auto w-fit block rounded-md" 
+                <Link
+                    to="/gui"
+                    className="bg-blue-500 text-white px-4 py-2 ml-auto w-fit block rounded-md"
                 //  onClick={() => setIsModalOpen(true)} 
-                  >New</Link>
+                >New</Link>
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
@@ -178,6 +212,12 @@ const FormManagement = () => {
                         </div>
                     </div>
                 )}
+            </div>
+            <div>
+                <h2>Upload file .docx</h2>
+                <input type="file" accept=".doc" onChange={handleFileChange} />
+                <button onClick={handleUpload}>Upload</button>
+                <p>{message}</p>
             </div>
 
         </>
