@@ -38,6 +38,8 @@ import CreateLayoutForm from "./pages/Admin/CreateLayoutForm";
 import LayoutAdmin from "./components/LayoutAdmin";
 import FormManagement from "./pages/Admin/FormManagement";
 import FormRequest from "./pages/FormRequest";
+import DocxEditor from "./components/DocxEditor";
+import OnlyOfficeViewer from './components/OnlyOfficeViewer'; 
 
 
 
@@ -76,7 +78,8 @@ function App() {
         <Route path="/gui" element={<SubmitApplication />} />
         <Route path="/nhan" element={<ReceiveApplication />} />
         <Route path="/form" element={<FormListStudent />} />
-
+        <Route path="/tests" element={<DocxEditor />} />
+        {/* <Route path="/tests2" element={<OnlyOfficeViewer filename="document.docx" />} /> */}
       </Routes>
     </>
   )
