@@ -142,7 +142,7 @@ export default function CreateLayoutForm() {
       const res = await fetch(`http://nckh.local/api/admin/create-layout-form/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ "form-model": htmlContent })
+        body: JSON.stringify({ "form-model": editor.getHTML() })
       });
       const data = await res.json();
       alert("Tạo thành công");

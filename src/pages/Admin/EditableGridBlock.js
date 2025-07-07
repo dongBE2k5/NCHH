@@ -21,13 +21,6 @@ const EditableGridBlock = Node.create({
           };
         },
       },
-      width: {
-        default: "100%",
-        parseHTML: (el) => el.style.width || "100%",
-        renderHTML: (attrs) => ({
-          style: `width: ${attrs.width}`,
-        }),
-      },
     };
   },
 
