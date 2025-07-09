@@ -40,6 +40,7 @@ import FormManagement from "./pages/Admin/FormManagement";
 import FormRequest from "./pages/FormRequest";
 import DocxEditor from "./components/DocxEditor";
 import OnlyOfficeViewer from './components/OnlyOfficeViewer'; 
+import Layout from "./pages/Admin/Layout";
 
 
 
@@ -57,6 +58,8 @@ function App() {
         <Route path="/forms/:formID/preview-form/:id" element={<MainLayout>  <PreviewForm /> </MainLayout>} />
         <Route path="/admin/forms" element={<LayoutAdmin>  <CreateFieldForm /> </LayoutAdmin>} />
         <Route path="/admin/create-layout/:id" element={<LayoutAdmin>  <CreateLayoutForm /> </LayoutAdmin>} />
+        <Route path="/admin/create-field" element={<LayoutAdmin>  <CreateFieldForm /> </LayoutAdmin>} />
+        <Route path="/admin/layout/:id" element={<LayoutAdmin>  <Layout /> </LayoutAdmin>} />
         <Route path="/admin/form-management" element={<LayoutAdmin>  <FormManagement /> </LayoutAdmin>} />
         <Route path="/admin" element={<LayoutAdmin />} />
         <Route path="/login" element={<Login />} />

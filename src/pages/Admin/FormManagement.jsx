@@ -12,42 +12,13 @@ const FormManagement = () => {
     const [file, setFile] = useState(null);
     const [message, setMessage] = useState('');
 
-    const handleFileChange = (e) => {
-        setFile(e.target.files[0]);
-    };
-    const handleUpload = async () => {
-        if (!file) {
-            setMessage('Vui lòng chọn file .docx');
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('doc_file', file);
-
-        try {
-            const response = await fetch('http://nckh.local/api/upload-docx1', {
-                method: 'POST',
-                body: formData,
-            });
-
-            const data = await response.json();
-            console.log(data);
-
-            if (response.ok) {
-                setMessage('Upload thành công: ' + data.message);
-            } else {
-                setMessage('Upload thất bại: ' + (data.message || 'Lỗi không xác định'));
-            }
-        } catch (error) {
-            console.error('Upload lỗi:', error);
-            setMessage('Lỗi khi upload');
-        }
-    };
+   
+    
 
     const fetchTypeOfForm = async () => {
         try {
-            // const response = await fetch('http://nckh.local/api/forms');
-            const response = await fetch('http://nckh.local/api/get');
+            const response = await fetch('http://nckh.local/api/forms');
+            // const response = await fetch('http://nckh.local/api/get');
             const data = await response.json();
             setFormData(data);
         } catch (error) {
@@ -106,11 +77,10 @@ const FormManagement = () => {
     return (
         <>
             <div className="p-6 bg-white rounded-xl shadow-md">
-                <Link
-                    to="/gui"
+                <button
                     className="bg-blue-500 text-white px-4 py-2 ml-auto w-fit block rounded-md"
-                //  onClick={() => setIsModalOpen(true)} 
-                >New</Link>
+                 onClick={() => setIsModalOpen(true)} 
+                >New</button>
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
@@ -145,14 +115,12 @@ const FormManagement = () => {
                                             >
                                                 Delete
                                             </button>
-                                            {/* <Link
-                                                // to={`/admin/create-layout/${item.id}`}
-                                                to={`/gui`}
-                                                onClick={() => console.log('Create Layout', item.id)}
+                                            <Link
+                                                to={`/admin/layout/${item.id}`}
                                                 className="px-3 py-1 text-sm font-medium text-green-600 bg-green-50 border border-green-200 rounded hover:bg-green-100"
                                             >
-                                                Custom Layout
-                                            </Link> */}
+                                                Layout
+                                            </Link>
                                         </div>
                                     </td>
                                 </tr>
@@ -207,18 +175,14 @@ const FormManagement = () => {
                                     >
                                         Save
                                     </button>
+                                    
                                 </div>
                             </form>
                         </div>
                     </div>
                 )}
             </div>
-            <div>
-                <h2>Upload file .docx</h2>
-                <input type="file" accept=".doc" onChange={handleFileChange} />
-                <button onClick={handleUpload}>Upload</button>
-                <p>{message}</p>
-            </div>
+            
 
         </>
     );
