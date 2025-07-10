@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+
 // import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer"; // Nếu cần hiển thị file
 
 const Layout = () => {
@@ -9,17 +11,18 @@ const Layout = () => {
     const { id } = useParams();
     const [fields, setFields] = useState([]);
     const [docxHtml, setDocxHtml] = useState('');
+
     useEffect(() => {
         async function getFormDetail() {
             try {
                 const response = await fetch(`http://nckh.local/api/forms/${id}`);
                 if (!response.ok) throw new Error('Lỗi tải dữ liệu');
                 const result = await response.json();
-                setUri(result['form-model']);
                 console.log(result['form-model']);
                 try {
-                    const res = await fetch(`http://nckh.local/api/preview-docx/${result['form-model']}`);
+                    const res = await fetch(`http://nckh.local/api/docx-to-html/${result['form-model']}`);
                     const data = await res.json();
+                    console.log("data", data);
                     setDocxHtml(data.html);
                   } catch (err) {
                     console.error("Lỗi khi đọc đơn:", err);
@@ -42,6 +45,7 @@ const Layout = () => {
         const formData = new FormData();
         formData.append('doc_file', file);
 
+        console.log("uri", uri);
         try {
             const response = await fetch('http://nckh.local/api/upload-docx1', {
                 method: 'POST',
@@ -60,6 +64,7 @@ const Layout = () => {
 
             setMessage('✅ ' + data.message);
             console.log("Filename", data.filename);
+            setUri(data.filename);
             updateLayout(data);
 
         } catch (error) {
@@ -117,13 +122,31 @@ const Layout = () => {
 
             if (!response.ok) throw new Error('Lưu thất bại');
             await response.json();
-            alert("✅ Lưu biểu mẫu thành công");
+            Swal.fire({
+                title: 'Thành công',
+                text: 'Lưu biểu mẫu thành công',
+                icon: 'success',
+            });
+            fetchDocxHtml(uri);
+            console.log("uri", uri);
+            setFields([]);
+            console.log("fields", fields);
+            console.log("docxHtml", docxHtml);
+            
         } catch (error) {
             console.error('Lỗi khi lưu form:', error);
             alert('❌ Có lỗi xảy ra khi lưu biểu mẫu.');
         }
     };
-
+    const fetchDocxHtml = async (filename) => {
+        try {
+          const res = await fetch(`http://nckh.local/api/docx-to-html/${filename}`);
+          const data = await res.json();
+          setDocxHtml(data.html);
+        } catch (err) {
+          console.error("Lỗi khi load lại layout HTML:", err);
+        }
+      };
 
     return (
         <div className="flex flex-col md:flex-row gap-6 p-6 bg-gray-100 h-screen pb-10 ">
@@ -161,9 +184,10 @@ const Layout = () => {
             <div className="w-full md:w-2/3 h-full overflow-y-auto">
                 {fields.length > 0 && <h2 className="text-2xl font-bold mb-4 text-gray-800">📋 Thiết lập Trường Dữ Liệu</h2>}
                 <div className="space-y-6">
-                    <div className='w-full h-full overflow-hidden'>
-                        {/* <div className='form-model' dangerouslySetInnerHTML={{ __html: docxHtml }} />    */}
-                    </div>
+                    {docxHtml != undefined && fields.length === 0 && 
+                        <div className='w-full h-full bg-white py-4 px-8 rounded-lg shadow-md overflow-hidden'>
+                        <div className='form-model' dangerouslySetInnerHTML={{ __html: docxHtml }} />
+                    </div>}
 
                     {fields.map((field, index) => (
                         <div key={index} className="bg-white p-4 rounded-xl shadow border">
@@ -226,7 +250,7 @@ const Layout = () => {
                     ))}
                 </div>
 
-                {fields.length > 0 && (
+                {fields.length > 0  && (
                     <button
                         onClick={saveField}
                         className="mt-8 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition"

@@ -95,6 +95,15 @@ export default function FormDetailStudent() {
                   />
                 )}
 
+                {field.data_type === "number" && (
+                  <input
+                    type="number"
+                    className="w-full border border-gray-300 px-5 py-3 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                    value={formState[field.id] || ""}
+                    onChange={(e) => handleChange(field.id, e.target.value)}
+                  />
+                )}
+
                 {field.data_type === "textarea" && (
                   <textarea
                     rows={4}

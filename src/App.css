@@ -47,3 +47,10 @@
   margin: 0;
   padding: 0;
 }
+.form-model p {
+  width: 100%;
+  text-align: revert-layer !important;
+}
+.form-model {
+  text-align: left;
+}
