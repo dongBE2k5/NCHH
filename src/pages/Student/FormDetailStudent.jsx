@@ -1,37 +1,50 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 export default function FormDetailStudent() {
   const [formState, setFormState] = useState({});
   const [fieldForm, setFieldForm] = useState(null);
+  const [notification, setNotification] = useState(null);
   const { id } = useParams();
-
-    useEffect(() => {
+  const navigate = useNavigate();
+  useEffect(() => {
     async function getFormDetail() {
-        console.log("Id " + id);
-        
-        try {
-            const url = `http://nckh.local/api/forms/${id}`;
-            const response = await fetch(url);
+      console.log("Id " + id);
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
+      try {
+        const url = `http://nckh.local/api/forms/${id}`;
+        const response = await fetch(url);
 
-            const result = await response.json();
-            setFieldForm(result);
-            console.log(result);
-        } catch (error) {
-            console.error("Failed to fetch forms:", error);
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
+
+
+        const result = await response.json();
+        setFieldForm(result);
+        console.log(result);
+      } catch (error) {
+        console.error("Failed to fetch forms:", error);
+      }
     }
-    
+    async function fetchDependencies() {
+      const res = await fetch(`http://nckh.local/api/forms/${id}/dependencies`);
+      const data = await res.json();
+      if (data.dependencies.length > 0) {
+        console.log("dependency_form_ids", data.dependencies);
+        const notification = `Bạn cần nộp thêm các biểu mẫu sau: ${data.dependencies.map(form => form.name).join(', ')}`;
+        setNotification(notification);
+      } 
+    }
+
+    fetchDependencies();
 
     getFormDetail();
-}, []);
-    if (!fieldForm) {
-        return <div className="text-center py-10">Đang tải biểu mẫu...</div>;
-        }
+  }, []);
+  if (!fieldForm) {
+    return <div className="text-center py-10">Đang tải biểu mẫu...</div>;
+  }
   const handleChange = (id, value, isCheckbox = false) => {
     setFormState((prev) => {
       if (isCheckbox) {
@@ -49,28 +62,43 @@ export default function FormDetailStudent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Submitted:", formState);
-     try {
-            const response = await fetch(`http://nckh.local/api/submit-form/${id}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formState),
-            });
-        
+    try {
+      const response = await fetch(`http://nckh.local/api/submit-form/${id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formState),
+      });
 
-            if (!response.ok) throw new Error('Lưu thất bại');
-            await response.json();
-            
-        } catch (error) {
-            console.error('Lỗi khi lưu form:', error);
-            alert('Có lỗi xảy ra khi lưu biểu mẫu.');
-        }
-    alert("\u0110\u00e3 g\u1eedi \u0111\u01a1n th\u00e0nh c\u00f4ng!");
+
+      if (!response.ok) throw new Error('Lưu thất bại');
+      await response.json();
+
+    } catch (error) {
+      console.error('Lỗi khi lưu form:', error);
+      alert('Có lỗi xảy ra khi lưu biểu mẫu.');
+    }
+    if (notification !== null) {
+      Swal.fire({
+        title: 'Thành công',
+        text: notification,
+      });
+      navigate('/')
+    }else {
+      Swal.fire({
+        title: 'Thành công',
+        text: 'Bạn đã nộp biểu mẫu thành công',
+        icon: 'success',
+      });
+      navigate('/status')
+
+    }
+
   };
 
   return (
-    
+
     <div className="min-h-screen pt-[72px] bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-10">
         <h2 className="text-4xl font-bold text-center text-blue-800 mb-10">
@@ -127,7 +155,7 @@ export default function FormDetailStudent() {
                     {field.options?.map((opt, idx) => (
                       <label key={idx} className="inline-flex items-center space-x-2">
                         <input
-                            className="w-fit"
+                          className="w-fit"
                           type="radio"
                           name={`field-${field.id}`}
                           value={opt}
@@ -145,7 +173,7 @@ export default function FormDetailStudent() {
                     {field.options?.map((opt, idx) => (
                       <label key={idx} className="inline-flex items-center space-x-2">
                         <input
-                        className="w-fit"
+                          className="w-fit"
                           type="checkbox"
                           name={`field-${field.id}`}
                           value={opt}
@@ -179,7 +207,7 @@ export default function FormDetailStudent() {
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold py-4 rounded-xl shadow-lg transition duration-300"
           >
-Gửi          </button>
+            Gửi          </button>
         </form>
       </div>
     </div>
