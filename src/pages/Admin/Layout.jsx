@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+
 // import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer"; // Nếu cần hiển thị file
 
 const Layout = () => {
@@ -9,27 +11,51 @@ const Layout = () => {
     const { id } = useParams();
     const [fields, setFields] = useState([]);
     const [docxHtml, setDocxHtml] = useState('');
+    const [allForm, setAllForm] = useState([]);
+    const [selectedForms, setSelectedForms] = useState([]);
+
+
+    useEffect(() => {
+        async function fetchDependencies() {
+            const res = await fetch(`http://localhost:8000/api/forms/${id}/dependencies`);
+            const data = await res.json();
+            console.log("dependency_form_ids", data.dependency_form_ids);
+
+            setSelectedForms(data.dependency_form_ids || []);
+        }
+
+        fetchDependencies();
+    }, [id]);
+
+
     useEffect(() => {
         async function getFormDetail() {
             try {
-                const response = await fetch(`http://nckh.local/api/forms/${id}`);
+                const response = await fetch(`http://localhost:8000/api/forms/${id}`);
                 if (!response.ok) throw new Error('Lỗi tải dữ liệu');
                 const result = await response.json();
-                setUri(result['form-model']);
-                console.log(result['form-model']);
+                console.log(result['form_model']);
                 try {
-                    const res = await fetch(`http://nckh.local/api/preview-docx/${result['form-model']}`);
+                    const res = await fetch(`http://localhost:8000/api/docx-to-html/${result['form_model']}`);
                     const data = await res.json();
+                    console.log("data", data);
                     setDocxHtml(data.html);
-                  } catch (err) {
+                } catch (err) {
                     console.error("Lỗi khi đọc đơn:", err);
-                  }
+                }
 
             } catch (error) {
                 console.error("Failed to fetch forms:", error);
             }
         }
 
+        async function getAllForm() {
+            const response = await fetch(`http://localhost:8000/api/forms`);
+            const data = await response.json();
+            console.log("data1", data);
+            setAllForm(data);
+        }
+        getAllForm();
         getFormDetail();
     }, []);
 
@@ -42,8 +68,9 @@ const Layout = () => {
         const formData = new FormData();
         formData.append('doc_file', file);
 
+        console.log("uri", uri);
         try {
-            const response = await fetch('http://nckh.local/api/upload-docx1', {
+            const response = await fetch('http://localhost:8000/api/upload-docx1', {
                 method: 'POST',
                 body: formData,
             });
@@ -60,6 +87,7 @@ const Layout = () => {
 
             setMessage('✅ ' + data.message);
             console.log("Filename", data.filename);
+            setUri(data.filename);
             updateLayout(data);
 
         } catch (error) {
@@ -69,10 +97,10 @@ const Layout = () => {
     };
 
     const updateLayout = async (data) => {
-        const res2 = await fetch(`http://nckh.local/api/admin/create-layout-form/${id}`, {
+        const res2 = await fetch(`http://localhost:8000/api/admin/create-layout-form/${id}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ "form-model": data.filename }),
+            body: JSON.stringify({ "form_model": data.filename }),
         });
 
         if (!res2.ok) {
@@ -106,7 +134,7 @@ const Layout = () => {
                 };
             });
 
-            const response = await fetch(`http://nckh.local/api/forms/${id}`, {
+            const response = await fetch(`http://localhost:8000/api/forms/${id}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -117,13 +145,55 @@ const Layout = () => {
 
             if (!response.ok) throw new Error('Lưu thất bại');
             await response.json();
-            alert("✅ Lưu biểu mẫu thành công");
+            Swal.fire({
+                title: 'Thành công',
+                text: 'Lưu biểu mẫu thành công',
+                icon: 'success',
+            });
+            fetchDocxHtml(uri);
+            console.log("uri", uri);
+            setFields([]);
+            console.log("fields", fields);
+            console.log("docxHtml", docxHtml);
+
         } catch (error) {
             console.error('Lỗi khi lưu form:', error);
             alert('❌ Có lỗi xảy ra khi lưu biểu mẫu.');
         }
     };
+    // const fetchDocxHtml = async (filename) => {
+    //     try {
+    //         const res = await fetch(`http://localhost:8000/api/docx-to-html/${filename}`);
+    //         const data = await res.json();
+    //         setDocxHtml(data.html);
+    //     } catch (err) {
+    //         console.error("Lỗi khi load lại layout HTML:", err);
+    //     }
+    // };
 
+    const saveDependencyForm = async () => {
+        try {
+            const response = await fetch(`http://localhost:8000/api/forms/dependency`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    'form_id': id,
+                    'dependency_form_id': selectedForms,
+                }),
+            });
+            console.log(response);
+            
+            if (!response.ok) throw new Error('Lưu thất bại');
+            await response.json();
+            Swal.fire({
+                title: 'Thành công',
+                text: 'Lưu biểu mẫu kèm theo thành công',
+                icon: 'success',
+            });
+        } catch (error) {
+            console.error('Lỗi khi lưu form:', error);
+        }
+    }
 
     return (
         <div className="flex flex-col md:flex-row gap-6 p-6 bg-gray-100 h-screen pb-10 ">
@@ -155,15 +225,51 @@ const Layout = () => {
                         {message}
                     </p>
                 )}
+
+                <p className="mt-4 text-base font-semibold text-start text-gray-800 p-3 ">
+                    Các đơn kèm theo khi nộp biểu mẫu
+                </p>
+                <div className='mt-2'>
+                    {allForm.map((form, index) => (
+                        form.id != id && (
+                            <div key={index} className='bg-white p-4 rounded-xl '>
+                                <label className='flex items-center'>
+                                    <input
+                                        type="checkbox"
+                                        className="mr-2 w-4 h-4"
+                                        checked={selectedForms.includes(form.id)}
+                                        onChange={(e) => {
+                                            if (e.target.checked) {
+                                                setSelectedForms([...selectedForms, form.id]);
+                                            } else {
+                                                setSelectedForms(selectedForms.filter(fid => fid !== form.id));
+                                            }
+                                        }}
+                                    />
+                                    {form.name}
+                                </label>
+
+                            </div>
+                        )
+                    ))}
+                    <p className='text-sm text-gray-600 mt-2'>
+                        Đã chọn {selectedForms.length} biểu mẫu phụ thuộc
+                    </p>
+                    <button onClick={saveDependencyForm} className='mt-4 bg-blue-600 hover:bg-blue-700 w-full text-white py-2 px-4 rounded-lg shadow font-medium transition'>
+                        Lưu
+                    </button>
+                </div>
+
             </div>
 
             {/* Right Panel - Fields */}
             <div className="w-full md:w-2/3 h-full overflow-y-auto">
                 {fields.length > 0 && <h2 className="text-2xl font-bold mb-4 text-gray-800">📋 Thiết lập Trường Dữ Liệu</h2>}
                 <div className="space-y-6">
-                    <div className='w-full h-full overflow-hidden'>
-                        {/* <div className='form-model' dangerouslySetInnerHTML={{ __html: docxHtml }} />    */}
-                    </div>
+                    {docxHtml != undefined && fields.length === 0 &&
+                        <div className='w-full h-full bg-white py-4 px-8 rounded-lg shadow-md overflow-hidden'>
+                            {/* <div className='form_model' dangerouslySetInnerHTML={{ __html: docxHtml }} /> */}
+                        </div>}
 
                     {fields.map((field, index) => (
                         <div key={index} className="bg-white p-4 rounded-xl shadow border">

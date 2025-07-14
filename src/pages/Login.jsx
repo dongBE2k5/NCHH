@@ -7,45 +7,47 @@ function Login() {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const response = await fetch("http://127.0.0.1:8000/api/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        name: username, // hoặc `username` tùy API backend yêu cầu
-        password: password,
-      }),
-    });
-    console.log(response);
-    
-    if (!response.ok) {
-      throw new Error("Sai thông tin đăng nhập");
-    }
+    try {
+      const response = await fetch("http://localhost:8000/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          name: username, // hoặc `username` tùy API backend yêu cầu
+          password: password,
+        }),
+      });
+      console.log(response);
 
-    const data = await response.json();
-    console.log(data);
-    
-    // Lưu token nếu có
-    localStorage.setItem("token", data.access_token);
-       localStorage.setItem("token_type", data.token_type);
-       
-    console.log(window.localStorage);
-    
-    // Phân quyền nếu cần
-    if (data.user.role === "admin") {
-      navigate("/admin");
-    } else {
-      navigate("/dashboard");
+      if (!response.ok) {
+        throw new Error("Sai thông tin đăng nhập");
+      }
+
+      const data = await response.json();
+      console.log(data);
+
+      // Lưu token nếu có
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("token_type", data.token_type);
+      localStorage.setItem("roles", data.roles);
+      console.log(window.localStorage);
+      console.log(data.roles);
+      // Phân quyền nếu cần
+      if (data.roles == "admin") {
+        navigate("/admin");
+
+
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      alert("Đăng nhập thất bại: " + error.message);
     }
-  } catch (error) {
-    alert("Đăng nhập thất bại: " + error.message);
-  }
-};
+  };
   return (
     <div className="bg-gray-100 flex items-center justify-center h-screen">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
@@ -62,6 +64,7 @@ function Login() {
               onChange={(e) => setUsername(e.target.value)}
               className="w-full p-2 border rounded"
               placeholder="Nhập mã sinh viên hoặc mã nhân viên"
+              autoComplete="username"
             />
           </div>
           <div className="mb-4">
@@ -72,6 +75,7 @@ function Login() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full p-2 border rounded"
               placeholder="Nhập mật khẩu"
+              autoComplete="current-password"
             />
           </div>
           <button

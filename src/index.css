@@ -18,10 +18,11 @@
 
 body {
  
-  @apply bg-gray-100 font-sans text-gray-800;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  /* @apply bg-gray-100 font-sans text-gray-800; */
+  /* place-items: center; */
+  /* min-width: 320px; */
+  /* min-height: 100vh; */
 }
+
 
 

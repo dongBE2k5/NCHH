@@ -3,7 +3,7 @@ const saveForm = async (formName) => {
       const data = {
           name: formName,
         };
-      const res = await fetch(`http://nckh.local/api/create-form`, {
+      const res = await fetch(`http://localhost:8000/api/create-form`, {
         
         method: "POST",
         headers: {
@@ -23,7 +23,7 @@ const saveForm = async (formName) => {
    const deleteForm = async (formID) => {
       try {
       
-        const res = await fetch(`http://nckh.local/api/forms/${formID}`, {
+        const res = await fetch(`http://localhost:8000/api/forms/${formID}`, {
           
           method: "DELETE",
           headers: {
@@ -45,7 +45,7 @@ const saveForm = async (formName) => {
         const data = {
             name: formName, 
           };
-        const res = await fetch(`http://nckh.local/api/forms/${formID}`, {
+        const res = await fetch(`http://localhost:8000/api/forms/${formID}`, {
           
           method: "PUT",
           headers: {

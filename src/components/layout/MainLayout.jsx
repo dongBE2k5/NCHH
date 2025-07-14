@@ -3,13 +3,15 @@ import React from "react";
 import Header from "../Header";
 import Footer from "../Footer";
 import Navbar from "../NavbarComponent";
+import { Outlet } from 'react-router-dom'; 
 
-const MainLayout = ({ children }) => {
+const MainLayout = () => {
   return (
     <>
-      {/* <Navbar userType="student" /> */}
       <Header />
-      <main>{children}</main>
+       <main>
+        <Outlet /> 
+      </main>
       <Footer />
     </>
   );

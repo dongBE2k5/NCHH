@@ -1,0 +1,54 @@
+/* src/App.css hoặc file CSS khác */
+
+.docx-viewer-content h1,
+.docx-viewer-content h2,
+.docx-viewer-content h3,
+.docx-viewer-content h4,
+.docx-viewer-content h5,
+.docx-viewer-content h6 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: bold;
+}
+
+.docx-viewer-content h1 { font-size: 2em; }
+.docx-viewer-content h2 { font-size: 1.8em; }
+.docx-viewer-content h3 { font-size: 1.5em; }
+.docx-viewer-content h4 { font-size: 1.2em; }
+
+.docx-viewer-content p {
+  margin-bottom: 1em;
+  line-height: 1.6;
+}
+
+.docx-viewer-content ul,
+.docx-viewer-content ol {
+  margin-bottom: 1em;
+  margin-left: 2em;
+}
+
+.docx-viewer-content li {
+  margin-bottom: 0.5em;
+}
+
+.docx-viewer-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1em;
+}
+
+.docx-viewer-content th,
+.docx-viewer-content td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+.docx-viewer-content img {
+  max-width: 100%; /* Đảm bảo ảnh không tràn ra ngoài */
+  height: auto;
+  display: block; /* Tránh khoảng trắng dưới ảnh */
+  margin: 0 auto; /* Căn giữa ảnh */
+}
+
+/* Thêm các style khác nếu cần để điều chỉnh hiển thị */
