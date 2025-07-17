@@ -1,7 +1,7 @@
 // src/components/OnlyOfficeViewer.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { API_BASE_URL } from '../../service/BaseUrl';
+import { API_BASE_URL } from '../service/BaseUrl';
 
 
 const ONLYOFFICE_SERVER = 'https://documentserver.onlyoffice.com'; // hoặc URL máy chủ bạn tự host

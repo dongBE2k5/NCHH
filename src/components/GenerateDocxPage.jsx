@@ -1,7 +1,7 @@
 // src/components/DocxGeneratorForm.js
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { API_BASE_URL } from '../../service/BaseUrl';
+import { API_BASE_URL } from '../service/BaseUrl';
 
 
 function DocxGeneratorForm() {
