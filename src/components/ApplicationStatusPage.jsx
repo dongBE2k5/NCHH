@@ -1,13 +1,17 @@
 import React, { useState } from "react";
 import { motion } from 'framer-motion';
 import axios from 'axios'; // Import axios
+import FormDetailStudent from "../pages/Student/FormDetailStudent";
 
 function ApplicationStatusPage() {
     // applicationStatus will now be an ARRAY of applications fetched from the API
-    const [applicationStatus, setApplicationStatus] = useState(null); 
+    const [applicationStatus, setApplicationStatus] = useState(null);
     const [studentId, setStudentId] = useState("");
-    const [isLoading, setIsLoading] = useState(false); 
-    const [error, setError] = useState(null); 
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [modal, setModal] = useState(false);
+    const [formId, setFormId] = useState(null);
+    const [valueId, setValueId] = useState(null);
 
     const handleSearch = async () => {
         // Basic validation for student ID input
@@ -23,7 +27,7 @@ function ApplicationStatusPage() {
 
         try {
             // Make an API call to the backend
-            const response = await axios.get(`http://localhost:8000/api/request-students/search/${studentId.trim()}`);
+            const response = await axios.get(`http://nckh.local/api/request-students/search/${studentId.trim()}`);
             const result = response.data; // Assuming the API returns JSON data directly
 
             console.log("API response:", result);
@@ -33,12 +37,11 @@ function ApplicationStatusPage() {
                 // Map the API response structure to fit the component's expected structure
                 const formattedApplications = result.map(item => ({
                     id: item.id,
-                    formName: item.folder.name || "N/A", // Assuming API returns type_of_form_name
+                    formName: item['form_type'].name || "N/A", // Assuming API returns type_of_form_name
                     studentId: item.student_code,
-                    studentName: item.student.name || "N/A",
-                    submissionDate: item.created_at, // Use created_at directly, will format in render
+                    submissionDate: item.created_at,
                     status: item.status || "N/A",
-                    note: item.note || "Không có" // Assuming API returns a 'note' field
+                    formId: item['form_type'].id,
                 }));
                 setApplicationStatus(formattedApplications); // Store the array of applications
             } else {
@@ -95,14 +98,14 @@ function ApplicationStatusPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
-                    className="bg-white rounded-lg shadow-xl p-8 max-w-4xl mx-auto"
+                    className="bg-white rounded-lg shadow-xl p-8  mx-auto"
                 >
                     <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Tra Cứu Trạng Thái Đơn</h2>
                     <p className="text-gray-600 mb-6 text-center">
                         Nhập Mã số sinh viên của bạn để xem trạng thái tất cả các đơn học vụ đã nộp.
                     </p>
 
-                    <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                    <div className="flex flex-col justify-center items-center sm:flex-row gap-4 mb-6">
                         <input
                             type="text"
                             placeholder="Nhập Mã số sinh viên (ví dụ: 20510001)"
@@ -157,31 +160,43 @@ function ApplicationStatusPage() {
                                 <thead className="bg-gray-100">
                                     <tr>
                                         <th className="px-4 py-2 text-left text-sm font-semibold text-gray-600 border-b">Mã đơn</th>
-                                        <th className="px-4 py-2 text-left text-sm font-semibold text-gray-600 border-b">Loại đơn</th>
                                         <th className="px-4 py-2 text-left text-sm font-semibold text-gray-600 border-b">Mã SV</th>
-                                        <th className="px-4 py-2 text-left text-sm font-semibold text-gray-600 border-b">Tên SV</th>
+                                        <th className="px-4 py-2 text-left text-sm font-semibold text-gray-600 border-b">Tên đơn</th>
                                         <th className="px-4 py-2 text-left text-sm font-semibold text-gray-600 border-b">Ngày nộp</th>
                                         <th className="px-4 py-2 text-left text-sm font-semibold text-gray-600 border-b">Trạng thái</th>
-                                        <th className="px-4 py-2 text-left text-sm font-semibold text-gray-600 border-b">Ghi chú</th>
+                                        <th className="px-4 py-2 text-left text-sm font-semibold text-gray-600 border-b">Hành động</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {applicationStatus.map((app) => (
                                         <tr key={app.id} className="hover:bg-gray-50 border-b last:border-b-0">
-                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">{app.id}</td>
-                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">{app.formName || "N/A"}</td>
-                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">{app.studentId}</td>
-                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">{app.studentName || "N/A"}</td>
-                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
-                                                {/* Format the date for display */}
-                                                {app.submissionDate ? new Date(app.submissionDate).toLocaleDateString('vi-VN') : "N/A"}
+                                            <td className="px-4 py-3 text-left whitespace-nowrap text-sm text-gray-800">{app.id}</td>
+                                            <td className="px-4 py-3 text-left whitespace-nowrap text-sm text-gray-800">{app.studentId}</td>
+                                            <td className="px-4 py-3 text-left whitespace-nowrap text-sm text-gray-800">{app.formName || "N/A"}</td>
+                                            <td className="px-4 py-3 text-left whitespace-nowrap text-sm text-gray-800">
+                                                {app.submissionDate
+                                                    ? new Date(app.submissionDate).toLocaleString('vi-VN', {
+                                                        day: '2-digit',
+                                                        month: '2-digit',
+                                                        year: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                        second: '2-digit',
+                                                        hour12: false
+                                                    })
+                                                    : 'N/A'}
                                             </td>
-                                            <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                            <td className="px-4 py-3 text-left whitespace-nowrap text-sm">
                                                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusClasses(app.status)}`}>
                                                     {app.status}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-3 text-sm text-gray-800">{app.note || "Không có"}</td>
+                                            <td className="px-4 py-3 text-left text-sm text-gray-800">
+                                                <button onClick={() => { setModal(true); setFormId(app.formId); setValueId(app.id); }} className="bg-blue-600 text-white px-4 py-2 mr-2 rounded-md">
+                                                    Sửa thông tin
+                                                </button>
+                                                <button className="bg-green-600 text-white px-4 py-2 rounded-md">In đơn</button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -200,6 +215,22 @@ function ApplicationStatusPage() {
                     )}
                 </motion.div>
             </main>
+            {/* click ra ngoài thì tắt modal, nhưng nếu click vào form thì không tắt modal */}  
+            {modal && (
+                <div onClick={(event) => {
+                    if (event.target.classList.contains('bg-black', 'bg-opacity-50')) {
+                        setModal(false);
+                    }
+                }} className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-white w-full max-w-3xl h-[80vh] overflow-y-auto p-8 mt-10 rounded-lg shadow-lg">
+                  
+                        <div>
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Sửa thông tin đơn</h2>
+                            <FormDetailStudent  selectedId={formId} isEdit={true} valueID={valueId}></FormDetailStudent>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

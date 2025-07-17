@@ -46,7 +46,7 @@ function FormStatus() {
         <h1 className="text-2xl font-bold mb-6">Trạng thái biểu mẫu</h1>
         <div className="bg-white p-4 rounded-lg shadow">
           <Table
-            headers={["Tên biểu mẫu", "Ngày nộp", "Trạng thái"]}
+            headers={["MSSV", "Tên biểu mẫu", "Ngày nộp", "Trạng thái"]}
             data={forms}
             actions={actions}
           />
