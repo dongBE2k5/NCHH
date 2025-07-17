@@ -11,7 +11,7 @@ const FormTemplateService = {
     saveForm: async (name, parentId) => {
         const response = await axios.post(API_URL, {
             name,
-            parent_id: parentId
+            parent_id: parentId ?? null
         });
         return response.data;
     },

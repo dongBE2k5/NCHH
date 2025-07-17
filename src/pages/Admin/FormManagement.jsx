@@ -21,7 +21,7 @@ const buildTree = (folders, forms) => {
     id: `form-${item.id}`,
     name: item.name,
     isFolder: false,
-    parentId: item.parent_id,
+    parentId: item.parent_id ? item.parent_id :null,
     children: []
   }));
 

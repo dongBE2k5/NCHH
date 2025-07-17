@@ -56,6 +56,8 @@ import Settings from "./pages/Admin/Settings";
 import RequireAuth from "./pages/Admin/RequireAuth";
 import Layout from "./pages/Admin/Layout";
 import StudentManagementPage from "./pages/Admin/StudentManagementPage";
+import DocumentViewerPage from "./pages/Student/DocumentViewerPage";
+import EditFormPage from "./pages/Admin/EditFormPage";
 
 
 
@@ -104,10 +106,10 @@ function App() {
             <br /><span className="text-lg font-normal text-gray-600">Bạn có thể thêm nội dung mẫu in ở đây.</span>
           </div>
         } />
-        
+
         <Route path="/manage-forms" element={<ManageForms />} />
         <Route path="/notifications" element={<Notifications />} />
-        
+
 
         <Route path="/search" element={<FormSearch />} />
         <Route path="/print-form-detail/:mssv/:id/:date" element={<FormDetailForPrint />} />
@@ -126,6 +128,7 @@ function App() {
           <Route path="form-management" element={<FormManagement />} />
           <Route path="design-layout/:formCode" element={<FormLayoutDesigner />} />
           <Route path="layout/:id" element={<Layout />} />
+          <Route path="editlayout/:formId" element={<EditFormPage />} />
           <Route path="form-request" element={<FormRequest />} />
           <Route path="settings" element={<Settings />} />
 
@@ -143,6 +146,7 @@ function App() {
         <Route path="/tests5" element={<ScrapedContentDisplay />} />
         <Route path="/tests6" element={<PrintableApplicationForm />} />
         <Route path="/tests7" element={<DocxViewer />} />
+        <Route path="/tests8" element={<DocumentViewerPage />} />
       </Routes>
     </>
   )

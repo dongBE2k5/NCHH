@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Import Axios
 
 // import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer"; // Nếu cần hiển thị file
 
@@ -17,11 +18,15 @@ const Layout = () => {
 
     useEffect(() => {
         async function fetchDependencies() {
-            const res = await fetch(`http://localhost:8000/api/forms/${id}/dependencies`);
-            const data = await res.json();
-            console.log("dependency_form_ids", data.dependency_form_ids);
+            try {
+                const res = await axios.get(`http://localhost:8000/api/forms/${id}/dependencies`);
+                const data = res.data;
+                console.log("dependency_form_ids", data.dependency_form_ids);
 
-            setSelectedForms(data.dependency_form_ids || []);
+                setSelectedForms(data.dependency_form_ids || []);
+            } catch (error) {
+                console.error("Lỗi khi tải các biểu mẫu phụ thuộc:", error);
+            }
         }
 
         fetchDependencies();
@@ -31,33 +36,39 @@ const Layout = () => {
     useEffect(() => {
         async function getFormDetail() {
             try {
-                const response = await fetch(`http://localhost:8000/api/forms/${id}`);
-                if (!response.ok) throw new Error('Lỗi tải dữ liệu');
-                const result = await response.json();
-                console.log(result['form_model']);
-                try {
-                    const res = await fetch(`http://localhost:8000/api/docx-to-html/${result['form_model']}`);
-                    const data = await res.json();
-                    console.log("data", data);
-                    setDocxHtml(data.html);
-                } catch (err) {
-                    console.error("Lỗi khi đọc đơn:", err);
+                const response = await axios.get(`http://localhost:8000/api/forms/${id}`);
+                const result = response.data;
+                if(result.field_form){
+                    const formattedFields = result.field_form.map((item) => ({
+                        key:item.key,
+                        label: item.label,
+                        data_type: item.data_type,
+                        option:item.options ??'' ,
+                    }));
+                    setFields(formattedFields);
                 }
+                console.log(result['form_model']);
+                console.log(result);
 
+                // Đoạn mã đã được bỏ khỏi đây
             } catch (error) {
                 console.error("Failed to fetch forms:", error);
             }
         }
 
         async function getAllForm() {
-            const response = await fetch(`http://localhost:8000/api/forms`);
-            const data = await response.json();
-            console.log("data1", data);
-            setAllForm(data);
+            try {
+                const response = await axios.get(`http://localhost:8000/api/forms`);
+                const data = response.data;
+                console.log("data1", data);
+                setAllForm(data);
+            } catch (error) {
+                console.error("Lỗi khi tải tất cả biểu mẫu:", error);
+            }
         }
         getAllForm();
         getFormDetail();
-    }, []);
+    }, [id]); // Thêm 'id' vào dependency array để useEffect chạy lại khi id thay đổi
 
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
@@ -70,21 +81,13 @@ const Layout = () => {
 
         console.log("uri", uri);
         try {
-            const response = await fetch('http://localhost:8000/api/upload-docx1', {
-                method: 'POST',
-                body: formData,
+            const response = await axios.post('http://localhost:8000/api/upload-docx1', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data' // Axios sẽ tự động đặt nếu là FormData
+                }
             });
 
-            const contentType = response.headers.get('content-type');
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error('Lỗi khi upload DOCX: ' + errorText);
-            }
-
-            const data = contentType.includes('application/json')
-                ? await response.json()
-                : { message: 'Upload thành công nhưng không có JSON' };
-
+            const data = response.data; // Axios tự động parse JSON
             setMessage('✅ ' + data.message);
             console.log("Filename", data.filename);
             setUri(data.filename);
@@ -92,31 +95,29 @@ const Layout = () => {
 
         } catch (error) {
             console.error('Lỗi:', error);
-            setMessage('❌ ' + error.message);
+            setMessage('❌ ' + (error.response?.data?.detail || error.message)); // Xử lý lỗi từ response hoặc lỗi chung
         }
     };
 
     const updateLayout = async (data) => {
-        const res2 = await fetch(`http://localhost:8000/api/admin/create-layout-form/${id}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ "form_model": data.filename }),
-        });
+        try {
+            const res2 = await axios.post(`http://localhost:8000/api/admin/create-layout-form/${id}`, {
+                "form_model": data.filename
+            });
 
-        if (!res2.ok) {
-            const errText = await res2.text();
-            throw new Error('Lỗi khi tạo layout form: ' + errText);
+            const result = res2.data;
+            const placeholders = data.variables || [];
+            const formattedFields = placeholders.map((key) => ({
+                key,
+                label: '',
+                data_type: 'text',
+                option: '',
+            }));
+            setFields(formattedFields);
+        } catch (error) {
+            console.error('Lỗi khi tạo layout form:', error);
+            throw new Error('Lỗi khi tạo layout form: ' + (error.response?.data?.detail || error.message));
         }
-
-        const result = await res2.json();
-        const placeholders = data.variables || [];
-        const formattedFields = placeholders.map((key) => ({
-            key,
-            label: '',
-            data_type: 'text',
-            option: '',
-        }));
-        setFields(formattedFields);
     };
 
     const saveField = async () => {
@@ -134,23 +135,18 @@ const Layout = () => {
                 };
             });
 
-            const response = await fetch(`http://localhost:8000/api/forms/${id}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    type_of_form_id: id,
-                    fields: formattedFields,
-                }),
+            const response = await axios.post(`http://localhost:8000/api/forms/${id}`, {
+                type_of_form_id: id,
+                fields: formattedFields,
             });
 
-            if (!response.ok) throw new Error('Lưu thất bại');
-            await response.json();
+            await response.data; // Axios tự động parse JSON
             Swal.fire({
                 title: 'Thành công',
                 text: 'Lưu biểu mẫu thành công',
                 icon: 'success',
             });
-            fetchDocxHtml(uri);
+            // fetchDocxHtml(uri); // Nếu bạn muốn kích hoạt lại hàm này, hãy bỏ comment
             console.log("uri", uri);
             setFields([]);
             console.log("fields", fields);
@@ -158,33 +154,31 @@ const Layout = () => {
 
         } catch (error) {
             console.error('Lỗi khi lưu form:', error);
-            alert('❌ Có lỗi xảy ra khi lưu biểu mẫu.');
+            Swal.fire({ // Sử dụng Swal.fire cho thông báo lỗi nhất quán
+                title: 'Lỗi',
+                text: 'Có lỗi xảy ra khi lưu biểu mẫu: ' + (error.response?.data?.detail || error.message),
+                icon: 'error',
+            });
         }
     };
     // const fetchDocxHtml = async (filename) => {
-    //     try {
-    //         const res = await fetch(`http://localhost:8000/api/docx-to-html/${filename}`);
-    //         const data = await res.json();
-    //         setDocxHtml(data.html);
-    //     } catch (err) {
-    //         console.error("Lỗi khi load lại layout HTML:", err);
-    //     }
+    //      try {
+    //          const res = await axios.get(`http://localhost:8000/api/docx-to-html/${filename}`);
+    //          const data = res.data;
+    //          setDocxHtml(data.html);
+    //      } catch (err) {
+    //          console.error("Lỗi khi load lại layout HTML:", err);
+    //      }
     // };
 
     const saveDependencyForm = async () => {
         try {
-            const response = await fetch(`http://localhost:8000/api/forms/dependency`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    'form_id': id,
-                    'dependency_form_id': selectedForms,
-                }),
+            const response = await axios.post(`http://localhost:8000/api/forms/dependency`, {
+                'form_id': id,
+                'dependency_form_id': selectedForms,
             });
-            console.log(response);
-            
-            if (!response.ok) throw new Error('Lưu thất bại');
-            await response.json();
+            console.log(response.data); // Axios tự động parse JSON
+
             Swal.fire({
                 title: 'Thành công',
                 text: 'Lưu biểu mẫu kèm theo thành công',
@@ -192,6 +186,11 @@ const Layout = () => {
             });
         } catch (error) {
             console.error('Lỗi khi lưu form:', error);
+            Swal.fire({
+                title: 'Lỗi',
+                text: 'Có lỗi xảy ra khi lưu biểu mẫu kèm theo: ' + (error.response?.data?.detail || error.message),
+                icon: 'error',
+            });
         }
     }
 
