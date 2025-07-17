@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { API_BASE_URL } from '../../service/BaseUrl';
+
 
 function PrintableDocxForm() {
     const [studentName, setStudentName] = useState('');
@@ -31,7 +33,7 @@ function PrintableDocxForm() {
 
         try {
             // Gửi POST request đến backend để tạo DOCX, tải lên Google Drive và nhận URL
-            const response = await fetch('http://localhost:8000/generate-upload-and-print-via-drive', { // <-- ENDPOINT MỚI
+                const response = await fetch(`${API_BASE_URL}/generate-upload-and-print-via-drive`, { // <-- ENDPOINT MỚI
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

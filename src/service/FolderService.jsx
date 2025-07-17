@@ -1,7 +1,8 @@
 // src/services/FormService.js
 import axios from 'axios';
+import { API_BASE_URL } from '../service/BaseUrl';
 
-const API_URL = 'http://localhost:8000/api/folder';
+const API_URL = `${API_BASE_URL}/folder`;
 
 const FolderService = {
   fetchForms: async () => {

@@ -11,7 +11,7 @@ import {
     ArrowPathIcon,
 } from '@heroicons/react/24/solid';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+import { API_BASE_URL } from '../../service/BaseUrl';
 
 const Layout = () => {
     const { id: formId } = useParams(); // Rename id to formId for consistency

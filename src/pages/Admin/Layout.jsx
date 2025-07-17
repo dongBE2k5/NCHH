@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios'; // Import Axios
-
+import { API_BASE_URL } from '../../service/BaseUrl';
 // import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer"; // Nếu cần hiển thị file
 
 const Layout = () => {
@@ -19,7 +19,7 @@ const Layout = () => {
     useEffect(() => {
         async function fetchDependencies() {
             try {
-                const res = await axios.get(`http://localhost:8000/api/forms/${id}/dependencies`);
+                const res = await axios.get(`${API_BASE_URL}/forms/${id}/dependencies`);
                 const data = res.data;
                 console.log("dependency_form_ids", data.dependency_form_ids);
 
@@ -36,7 +36,7 @@ const Layout = () => {
     useEffect(() => {
         async function getFormDetail() {
             try {
-                const response = await axios.get(`http://localhost:8000/api/forms/${id}`);
+                const response = await axios.get(`${API_BASE_URL}/forms/${id}`);
                 const result = response.data;
                 if(result.field_form){
                     const formattedFields = result.field_form.map((item) => ({
@@ -58,7 +58,7 @@ const Layout = () => {
 
         async function getAllForm() {
             try {
-                const response = await axios.get(`http://localhost:8000/api/forms`);
+                const response = await axios.get(`${API_BASE_URL}/forms`);
                 const data = response.data;
                 console.log("data1", data);
                 setAllForm(data);
@@ -81,7 +81,7 @@ const Layout = () => {
 
         console.log("uri", uri);
         try {
-            const response = await axios.post('http://localhost:8000/api/upload-docx1', formData, {
+            const response = await axios.post(`${API_BASE_URL}/upload-docx1`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data' // Axios sẽ tự động đặt nếu là FormData
                 }
@@ -101,7 +101,7 @@ const Layout = () => {
 
     const updateLayout = async (data) => {
         try {
-            const res2 = await axios.post(`http://localhost:8000/api/admin/create-layout-form/${id}`, {
+            const res2 = await axios.post(`${API_BASE_URL}/admin/create-layout-form/${id}`, {
                 "form_model": data.filename
             });
 
@@ -135,7 +135,7 @@ const Layout = () => {
                 };
             });
 
-            const response = await axios.post(`http://localhost:8000/api/forms/${id}`, {
+            const response = await axios.post(`${API_BASE_URL}/forms/${id}`, {
                 type_of_form_id: id,
                 fields: formattedFields,
             });
@@ -163,7 +163,7 @@ const Layout = () => {
     };
     // const fetchDocxHtml = async (filename) => {
     //      try {
-    //          const res = await axios.get(`http://localhost:8000/api/docx-to-html/${filename}`);
+    //          const res = await axios.get(`http://nckh.local/api/docx-to-html/${filename}`);
     //          const data = res.data;
     //          setDocxHtml(data.html);
     //      } catch (err) {
@@ -173,7 +173,7 @@ const Layout = () => {
 
     const saveDependencyForm = async () => {
         try {
-            const response = await axios.post(`http://localhost:8000/api/forms/dependency`, {
+            const response = await axios.post(`${API_BASE_URL}/forms/dependency`, {
                 'form_id': id,
                 'dependency_form_id': selectedForms,
             });

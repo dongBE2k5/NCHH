@@ -4,10 +4,12 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios"; // Import axios
 import Swal from 'sweetalert2'; // Import SweetAlert2
 import { InformationCircleIcon, ExclamationTriangleIcon, ArrowPathIcon } from '@heroicons/react/24/outline'; // Import icons
+import { API_BASE_URL } from '../../service/BaseUrl';
 
-const API_BASE_URL = "http://localhost:8000/api";
+
+
 const STUDENT_ID_SESSION_KEY = "verifiedStudentId";
-export default function FormDetailStudent({ selectedId, isEdit = false, valueID }) {
+export default function FormDetailStudent({ selectedId, isEdit = false, valueID, onSubmitSuccess }) {
   const [formState, setFormState] = useState({});
   const [fieldForm, setFieldForm] = useState(null);
   const [notification, setNotification] = useState(null);
@@ -17,70 +19,33 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
   const navigate = useNavigate();
 
   useEffect(() => {
-
+    console.log("isEdit", isEdit);
     if (isEdit) {
       fetchData();
     }
-    async function fetchData() {
-      try {
-        const [detailRes, valueRes] = await Promise.all([
-          fetch(`http://nckh.local/api/forms/${selectedId}`),
-          fetch(`http://nckh.local/api/preview-form/${valueID}`)
-        ]);
-
-        if (!detailRes.ok || !valueRes.ok) throw new Error("Lỗi khi fetch dữ liệu");
-
-        const detailData = await detailRes.json();
-        const valueData = await valueRes.json();
-        const converted = {};
-        valueData.values.forEach(item => {
-          converted[item.field_form_id] = item.value;
-        });
-        setFormState(converted);
-        console.log("detailData", detailData);
-        console.log("valueData", valueData.values);
-
-
-      } catch (error) {
-        console.error("Lỗi khi tải dữ liệu:", error);
-      }
-    }
+   
     async function getFormDetail() {
       console.log("Id " + selectedId);
+      setLoading(false);
 
       try {
-        const url = `http://nckh.local/api/forms/${selectedId}`;
+        const url = `${API_BASE_URL}/forms/${selectedId}`;
         const response = await fetch(url);
 
-        const fetchData = async () => {
-          setLoading(true);
-          try {
-            const [formResponse, dependenciesResponse] = await Promise.all([
-              axios.get(`${API_BASE_URL}/forms/${formToFetchId}`),
-              axios.get(`${API_BASE_URL}/forms/${formToFetchId}/dependencies`)
-            ]);
-
-            setFieldForm(formResponse.data);
-
-            const dependenciesData = dependenciesResponse.data;
-            if (dependenciesData.dependencies && dependenciesData.dependencies.length > 0) {
-              const requiredForms = dependenciesData.dependencies
-                .map((form) => form.name)
-                .join(", ");
-              setNotification(`Bạn cần nộp thêm các biểu mẫu sau: ${requiredForms}`);
-            } else {
-              setNotification(null);
-            }
-          } catch (error) {
-            console.error("Failed to fetch form details or dependencies:", error);
-            setNotification("Đã xảy ra lỗi khi tải biểu mẫu hoặc thông tin phụ thuộc.");
-            setFieldForm(null);
-          } finally {
-            setLoading(false);
-          }
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
+
+
+        const result = await response.json();
+        setFieldForm(result);
+        console.log(result);
+      } catch (error) {
+        console.error("Failed to fetch forms:", error);
+      }
+    }
         async function fetchDependencies() {
-          const res = await fetch(`http://nckh.local/api/forms/${selectedId}/dependencies`);
+          const res = await fetch(`${API_BASE_URL}/forms/${selectedId}/dependencies`);
           const data = await res.json();
           if (data.dependencies.length > 0) {
             console.log("dependency_form_ids", data.dependencies);
@@ -88,15 +53,35 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
             setNotification(notification);
           }
         }
+        fetchDependencies();
 
-        fetchData();
-      }
-      catch (error) {
-        console.error("Lỗi khi tải dữ liệu:", error);
-      }
-    }
+        getFormDetail();
+
   }, [selectedId, id]);
+  async function fetchData() {
+    try {
+      const [detailRes, valueRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/forms/${selectedId}`),
+        fetch(`${API_BASE_URL}/preview-form/${valueID}`)
+      ]);
 
+      if (!detailRes.ok || !valueRes.ok) throw new Error("Lỗi khi fetch dữ liệu");
+
+      const detailData = await detailRes.json();
+      const valueData = await valueRes.json();
+      const converted = {};
+      valueData.values.forEach(item => {
+        converted[item.field_form_id] = item.value;
+      });
+      setFormState(converted);
+      console.log("detailData", detailData);
+      console.log("valueData", valueData.values);
+
+
+    } catch (error) {
+      console.error("Lỗi khi tải dữ liệu:", error);
+    }
+  }
   // --- Trạng thái Loading và Error ---
   if (loading) {
     return (
@@ -136,7 +121,7 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
     e.preventDefault();
 
     try {
-      const response = await fetch(`http://nckh.local/api/submit-form/${selectedId}`, {
+      const response = await fetch(`${API_BASE_URL}/submit-form/${selectedId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -196,6 +181,42 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
       }
     };
 
+    async function handleUpdate(e) {
+      e.preventDefault();
+      console.log("valueID", formState);
+      try {
+          const response = await fetch(`${API_BASE_URL}/update-data-form/${selectedId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            values: formState,
+            form_request_id: valueID,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Lỗi khi cập nhật biểu mẫu");
+        }
+
+        const data = await response.json();
+        console.log("data", data);
+        if (onSubmitSuccess) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Cập nhật thành công!',
+            text: 'Biểu mẫu của bạn đã được cập nhật thành công.',
+            confirmButtonText: 'Đóng',
+          }).then(() => {
+            onSubmitSuccess();
+          });
+          
+        }
+      } catch (error) {
+        console.error('Lỗi khi cập nhật biểu mẫu:', error);
+    }
+  }
     return (
 
       <div className="min-h-screen bg-blue-50 py-5 px-4 sm:px-6 lg:px-8">
@@ -204,10 +225,10 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
             {fieldForm.name}
           </h2>
 
-          <form onSubmit={handleSubmit} className="px-10 py-12 space-y-10">
+          <form  onSubmit={isEdit ? handleUpdate : handleSubmit} className="px-10 py-12 space-y-10">
             {fieldForm.field_form
               .sort((a, b) => a.order - b.order)
-              .map((field, index) => (
+              .map((field) => (
                 <div key={field.id}>
                   <label className="text-start w-full block pl-2 font-medium text-base text-gray-800 mb-1">
                     {field.label}
@@ -216,7 +237,7 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
                   {field.data_type === "text" && (
                     <input
                       type="text"
-                      className="w-full border border-gray-300 rounded-xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full !max-w-full border border-gray-300 rounded-xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={formState[field.id] || ""}
                       onChange={(e) => handleChange(field.id, e.target.value)}
                     />

@@ -1,6 +1,8 @@
 // src/components/OnlyOfficeViewer.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../service/BaseUrl';
+
 
 const ONLYOFFICE_SERVER = 'https://documentserver.onlyoffice.com'; // hoặc URL máy chủ bạn tự host
 
@@ -9,7 +11,7 @@ const OnlyOfficeViewer = ({ filename }) => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8000/api/docx-url/${filename}`)
+      .get(`${API_BASE_URL}/docx-url/${filename}`)
       .then((res) => setDocUrl(res.data.url))
       .catch((err) => console.error('Lỗi khi lấy URL:', err));
   }, [filename]);

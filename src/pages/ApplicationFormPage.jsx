@@ -14,7 +14,7 @@ import {
 } from "@heroicons/react/24/solid";
 
 const STUDENT_ID_SESSION_KEY = "verifiedStudentId";
-const API_BASE_URL = "http://localhost:8000/api";
+import { API_BASE_URL } from '../service/BaseUrl';
 
 export default function ApplicationFormPage() {
   const [studentIdInput, setStudentIdInput] = useState("");

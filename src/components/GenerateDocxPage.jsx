@@ -1,6 +1,8 @@
 // src/components/DocxGeneratorForm.js
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { API_BASE_URL } from '../../service/BaseUrl';
+
 
 function DocxGeneratorForm() {
     // Ví dụ về các trường dữ liệu mà bạn muốn đưa vào file docx
@@ -32,7 +34,7 @@ function DocxGeneratorForm() {
         };
 
         try {
-            const response = await fetch('http://localhost:8000/api/google-drive/docx', {
+                const response = await fetch(`${API_BASE_URL}/google-drive/docx`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

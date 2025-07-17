@@ -3,7 +3,7 @@ import Table from "../components/Table";
 import axios from 'axios';
 import { XMarkIcon } from '@heroicons/react/20/solid';
 import { CheckCircleIcon, ExclamationCircleIcon, InformationCircleIcon, PlusCircleIcon } from '@heroicons/react/24/outline';
-
+import { API_BASE_URL } from '../service/BaseUrl';
 function FormRequest() {
   // ... (tất cả các state đã có)
   const [originalForms, setOriginalForms] = useState([]);
@@ -50,7 +50,7 @@ function FormRequest() {
 
   // ... (tất cả các hàm không thay đổi: useEffect, convertToInputDate, etc.)
   useEffect(() => {
-    axios.get('http://localhost:8000/api/folder')
+    axios.get(`${API_BASE_URL}/folder`)
       .then(res => {
         const folderNames = res.data.map(folder => ({
           id: folder.id,
@@ -94,7 +94,7 @@ function FormRequest() {
 
   const sendEmailNotification = async ({ student_codes, title, message }) => {
     try {
-      await axios.post("http://localhost:8000/api/send-email-student", {
+      await axios.post(`${API_BASE_URL}/send-email-student`, {
         title,
         message,
         student_codes,
@@ -109,7 +109,7 @@ function FormRequest() {
 
 
   useEffect(() => {
-    axios.get("http://localhost:8000/api/request-students")
+    axios.get(`${API_BASE_URL}/request-students`)
       .then(res => {
         const formatted = res.data.map(item => ({
           id: item.id,
@@ -200,7 +200,7 @@ function FormRequest() {
     setShowConfirmationModal(false);
 
     try {
-      await axios.post("http://localhost:8000/api/request-students/bulk-update-status", {
+      await axios.post(`${API_BASE_URL}/request-students/bulk-update-status`, {
         ids: selectedFormIds,
         status: newStatus
       });
@@ -301,7 +301,7 @@ function FormRequest() {
     }
 
     try {
-      const response = await axios.post("http://localhost:8000/api/send-email-student", {
+        const response = await axios.post(`${API_BASE_URL}/send-email-student`, {
         title: notification.title,
         message: notification.content,
         student_codes: finalStudentCodes,
@@ -341,7 +341,7 @@ function FormRequest() {
 
     try {
       const updatePromises = formsToUpdate.map(form =>
-        axios.put(`http://localhost:8000/api/request-students/${form.id}`, { status: form.status })
+        axios.put(`${API_BASE_URL}/request-students/${form.id}`, { status: form.status })
       );
       await Promise.all(updatePromises);
       
@@ -440,7 +440,7 @@ function FormRequest() {
     setIsStudentSearching(true);
     setStudentSearchError('');
     try {
-      const response = await axios.get(`http://localhost:8000/api/student/search/${mssv}`);
+      const response = await axios.get(`${API_BASE_URL}/student/search/${mssv}`);
       if (response.data && response.data.length > 0 && response.data[0].name) {
         setFormModalData(prev => ({ ...prev, student: response.data[0].name }));
       } else {
@@ -481,7 +481,7 @@ function FormRequest() {
           status: formModalData.status,
         };
 
-        const response = await axios.post("http://localhost:8000/api/request-students", dataToSend);
+        const response = await axios.post(`${API_BASE_URL}/request-students`, dataToSend);
         const newFormFromApi = response.data;
 
         const formattedNewForm = {

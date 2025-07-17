@@ -1,6 +1,6 @@
 // src/components/ScrapedContentDisplay.js
 import React, { useState, useEffect, useCallback } from 'react'; // Import useCallback
-
+import { API_BASE_URL } from '../service/BaseUrl';
 function ScrapedContentDisplay() {
     const [scrapedData, setScrapedData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +26,7 @@ function ScrapedContentDisplay() {
         try {
             // Đảm bảo cổng là 4000 như bạn đã cấu hình trong server.js
             // Và đường dẫn là /api/scrape-element
-            const backendUrl = `http://localhost:8000/api/scrape-element?url=${encodeURIComponent(inputUrl.trim())}&selector=${encodeURIComponent(inputSelector.trim())}`;
+            const backendUrl = `${API_BASE_URL}/scrape-element?url=${encodeURIComponent(inputUrl.trim())}&selector=${encodeURIComponent(inputSelector.trim())}`;
             
             console.log("Đang gửi yêu cầu đến backend:", backendUrl);
             const response = await fetch(backendUrl);

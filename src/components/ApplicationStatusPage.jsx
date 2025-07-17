@@ -226,7 +226,7 @@ function ApplicationStatusPage() {
                   
                         <div>
                         <h2 className="text-2xl font-bold text-gray-800 mb-4">Sửa thông tin đơn</h2>
-                            <FormDetailStudent  selectedId={formId} isEdit={true} valueID={valueId}></FormDetailStudent>
+                            <FormDetailStudent  selectedId={formId} isEdit={true} valueID={valueId} onSubmitSuccess={() => setModal(false)}></FormDetailStudent>
                         </div>
                     </div>
                 </div>

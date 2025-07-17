@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios'; // Import axios để sử dụng thay vì fetch API
-
+import { API_BASE_URL } from '../service/BaseUrl';
 function FormSearch() {
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState([]);
@@ -25,7 +25,7 @@ function FormSearch() {
 
     try {
       // Sử dụng axios.get thay vì fetch
-      const response = await axios.get(`http://localhost:8000/api/form-value/${searchTerm.trim()}`);
+      const response = await axios.get(`${API_BASE_URL}/form-value/${searchTerm.trim()}`);
       const data = response.data; // axios tự động parse JSON
       console.log(data);
       

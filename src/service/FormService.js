@@ -1,9 +1,10 @@
+import { API_BASE_URL } from '../service/BaseUrl';
  const saveForm = async (formName) => {
   try {
     const data = {
         name: formName,
       };
-    const res = await fetch(`http://localhost:8000/api/create-form`, {
+    const res = await fetch(`${API_BASE_URL}/create-form`, {
       
       method: "POST",
       headers: {
@@ -23,7 +24,7 @@
  const deleteForm = async (formID) => {
     try {
     
-      const res = await fetch(`http://localhost:8000/api/forms/${formID}`, {
+      const res = await fetch(`${API_BASE_URL}/forms/${formID}`, {
         
         method: "DELETE",
         headers: {
@@ -45,7 +46,7 @@
       const data = {
           name: formName, 
         };
-      const res = await fetch(`http://localhost:8000/api/forms/${formID}`, {
+      const res = await fetch(`${API_BASE_URL}/forms/${formID}`, {
         
         method: "PUT",
         headers: {
