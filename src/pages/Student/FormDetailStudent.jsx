@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // Import axios
-import Swal from 'sweetalert2'; // Import SweetAlert2
+import axios from "axios";
+import Swal from 'sweetalert2';
 import { InformationCircleIcon, ExclamationTriangleIcon, ArrowPathIcon } from '@heroicons/react/24/outline'; // Import icons
+import { values } from "pdf-lib";
+import { API_BASE_URL } from '../../service/BaseUrl';
 
-const API_BASE_URL = "http://localhost:8000/api";
 const STUDENT_ID_SESSION_KEY = "verifiedStudentId";
 
 export default function FormDetailStudent({ selectedId }) {
@@ -14,10 +15,12 @@ export default function FormDetailStudent({ selectedId }) {
   const [notification, setNotification] = useState(null);
   const [verifiedStudentId] = useState(() => sessionStorage.getItem(STUDENT_ID_SESSION_KEY) || null);
   const [loading, setLoading] = useState(true);
-  const { id } = useParams();
+  const { id } = useParams(); // 'id' from URL params (used if not passed via prop)
   const navigate = useNavigate();
 
+  // Fetches the form template details and its dependencies
   useEffect(() => {
+    // Prioritize selectedId prop, fallback to URL param 'id'
     const formToFetchId = selectedId || id;
 
     if (!formToFetchId) {
@@ -44,21 +47,22 @@ export default function FormDetailStudent({ selectedId }) {
             .join(", ");
           setNotification(`Bạn cần nộp thêm các biểu mẫu sau: ${requiredForms}`);
         } else {
-          setNotification(null);
+          setNotification(null); // No dependencies, clear notification
         }
       } catch (error) {
         console.error("Failed to fetch form details or dependencies:", error);
         setNotification("Đã xảy ra lỗi khi tải biểu mẫu hoặc thông tin phụ thuộc.");
-        setFieldForm(null);
+        setFieldForm(null); // Clear form data on error
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
+    // Dependency array: re-run effect if selectedId or id from URL changes
   }, [selectedId, id]);
 
-  // --- Trạng thái Loading và Error ---
+  // --- Loading and Error States ---
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-center bg-white rounded-2xl shadow-lg p-8">
@@ -79,20 +83,32 @@ export default function FormDetailStudent({ selectedId }) {
     );
   }
 
+  /**
+   * Handles changes for all input types (text, number, textarea, date, radio, checkbox, select).
+   * @param {string} id - The ID of the form field.
+   * @param {*} value - The new value of the field.
+   * @param {boolean} [isCheckbox=false] - True if the field is a checkbox, for special handling.
+   */
   const handleChange = (id, value, isCheckbox = false) => {
     setFormState((prev) => {
       if (isCheckbox) {
+        // For checkboxes, toggle values in an array
         const current = prev[id] || [];
         const updated = current.includes(value)
           ? current.filter((v) => v !== value)
           : [...current, value];
         return { ...prev, [id]: updated };
       } else {
+        // For other inputs, directly set the value
         return { ...prev, [id]: value };
       }
     });
   };
 
+  /**
+   * Handles the form submission.
+   * Converts date formats if needed and sends data to the backend.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -110,21 +126,47 @@ export default function FormDetailStudent({ selectedId }) {
       return;
     }
 
+    const valuesToSubmit = { ...formState };
+
+    // --- Date Format Conversion (if your backend requires it) ---
+    // The HTML input type="date" outputs YYYY-MM-DD.
+    // If your backend expects a different format (e.g., DD/MM/YYYY or an ISO string with timezone),
+    // you need to convert it here.
+    fieldForm.field_form.forEach(field => {
+        if (field.data_type === 'date' && valuesToSubmit[field.id]) {
+            // Example: If backend needs ISO string (YYYY-MM-DDTHH:mm:ss.sssZ)
+            // This is generally a good default for APIs.
+            // new Date(YYYY-MM-DD) creates a date object at midnight UTC for that date.
+            // valuesToSubmit[field.id] = new Date(valuesToSubmit[field.id]).toISOString();
+
+            // Uncomment the block below if your backend specifically needs DD/MM/YYYY
+            /*
+            const [year, month, day] = valuesToSubmit[field.id].split('-');
+            valuesToSubmit[field.id] = `${day}/${month}/${year}`;
+            */
+        }
+    });
+    // --- End Date Format Conversion ---
+
+
     try {
+      console.log(valuesToSubmit);
       await axios.post(
         `${API_BASE_URL}/submit-form/${selectedId}`,
         {
           student_code: verifiedStudentId,
-          values: formState,
+          values: valuesToSubmit, // Use the potentially converted values
         }
       );
+      
+      
 
       let swalTitle = 'Gửi thành công!';
       let swalText = 'Biểu mẫu của bạn đã được nộp thành công.';
       let swalIcon = 'success';
 
       if (notification) {
-        swalText = notification;
+        swalText = notification; // Use dependency notification as the text if it exists
         swalIcon = 'info';
       }
 
@@ -138,7 +180,7 @@ export default function FormDetailStudent({ selectedId }) {
         },
         buttonsStyling: false,
       }).then(() => {
-        navigate('/');
+        // navigate('/'); // Navigate back to the home/main application form page
       });
 
     } catch (error) {
@@ -182,20 +224,19 @@ export default function FormDetailStudent({ selectedId }) {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {fieldForm.field_form
-            .sort((a, b) => a.order - b.order)
+            .sort((a, b) => a.order - b.order) // Ensure fields are displayed in order
             .map((field) => (
               <div key={field.id}
                    className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm
                               hover:shadow-md hover:border-indigo-300 transition-all duration-300 ease-in-out">
-                {/* Đã chuyển về bố cục xếp chồng (label trên, input dưới) */}
-                <div className="space-y-2"> {/* Thêm space-y-2 để tạo khoảng cách giữa label và input */}
+                <div className="space-y-2">
                   {/* Label */}
                   <label htmlFor={`field-${field.id}`} className="block text-base font-medium text-gray-800 mb-1">
                     {field.label}
                     {field.is_required && <span className="text-red-500 ml-2 text-sm font-normal">(Bắt buộc)</span>}
                   </label>
 
-                  {/* Input Element (now directly below label) */}
+                  {/* Input Elements */}
                   {field.data_type === "text" && (
                     <input
                       id={`field-${field.id}`}
@@ -259,7 +300,7 @@ export default function FormDetailStudent({ selectedId }) {
                             id={`field-${field.id}-${idx}`}
                             className="form-radio h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 cursor-pointer transition-colors duration-200"
                             type="radio"
-                            name={`field-${field.id}`}
+                            name={`field-${field.id}`} // Use name for radio group
                             value={opt}
                             checked={formState[field.id] === opt}
                             onChange={() => handleChange(field.id, opt)}
@@ -283,6 +324,7 @@ export default function FormDetailStudent({ selectedId }) {
                             value={opt}
                             checked={formState[field.id]?.includes(opt) || false}
                             onChange={() => handleChange(field.id, opt, true)}
+                            required={field.is_required && (!formState[field.id] || formState[field.id].length === 0)} // Basic required validation for checkboxes
                           />
                           <span>{opt}</span>
                         </label>

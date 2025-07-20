@@ -1,15 +1,42 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Outlet } from 'react-router-dom'; 
-
-const LayoutAdmin =() => {
+import { Outlet } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+const LayoutAdmin = () => {
+    const [loading, setLoading] = useState(true); // loading ban đầu là true
     const [isOpen, setIsOpen] = useState(false);
     const location = useLocation(); // Get current location for active link styling
+    const navigate = useNavigate();
+    useEffect(() => {
+        const token = localStorage.getItem("token");
 
+        if (!token) {
+            navigate("/login");
+        } else {
+            setTimeout(() => {
+                setLoading(false);
+            }, 2000);
+        }
+    }, []);
     // Effect to close sidebar on route change for mobile
     useEffect(() => {
         setIsOpen(false);
     }, [location]);
+    // ✅ Giữ phần return ở cuối sau các hook
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-screen text-white">
+                Đang tải...
+            </div>
+        );
+    }
+    const logout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("token_type");
+        localStorage.removeItem("roles");
+        navigate('/login');
+    }
+
 
     return (
         <>
@@ -24,9 +51,8 @@ const LayoutAdmin =() => {
             {/* Sidebar */}
             <aside
                 id="sidebar-multi-level-sidebar"
-                className={`fixed top-0 left-0 z-40 w-64 h-screen transition-transform ${
-                    isOpen ? "translate-x-0" : "-translate-x-full"
-                } sm:translate-x-0`}
+                className={`fixed top-0 left-0 z-40 w-64 h-screen transition-transform ${isOpen ? "translate-x-0" : "-translate-x-full"
+                    } sm:translate-x-0`}
                 aria-label="Sidebar"
             >
                 <div className="h-full px-3 py-4 overflow-y-auto bg-gradient-to-r from-blue-800 via-purple-900 to-indigo-900 text-white">
@@ -38,11 +64,10 @@ const LayoutAdmin =() => {
                         <li>
                             <Link
                                 to="/admin"
-                                className={`flex items-center p-2 rounded-lg group ${
-                                    location.pathname === "/admin"
-                                        ? "bg-blue-600 hover:bg-blue-700"
-                                        : "hover:bg-gray-700"
-                                }`}
+                                className={`flex items-center p-2 rounded-lg group ${location.pathname === "/admin"
+                                    ? "bg-blue-600 hover:bg-blue-700"
+                                    : "hover:bg-gray-700"
+                                    }`}
                             >
                                 <svg
                                     className="w-5 h-5 transition duration-75 text-white group-hover:text-white"
@@ -60,11 +85,10 @@ const LayoutAdmin =() => {
                         <li>
                             <Link
                                 to="/admin/form-management"
-                                className={`flex items-center p-2 rounded-lg group ${
-                                    location.pathname === "/admin/form-management"
-                                        ? "bg-blue-600 hover:bg-blue-700"
-                                        : "hover:bg-gray-700"
-                                }`}
+                                className={`flex items-center p-2 rounded-lg group ${location.pathname === "/admin/form-management"
+                                    ? "bg-blue-600 hover:bg-blue-700"
+                                    : "hover:bg-gray-700"
+                                    }`}
                             >
                                 <svg
                                     className="shrink-0 w-5 h-5 transition duration-75 text-white group-hover:text-white"
@@ -83,11 +107,10 @@ const LayoutAdmin =() => {
                         <li>
                             <Link
                                 to="/admin/form-request"
-                                className={`flex items-center p-2 rounded-lg group ${
-                                    location.pathname === "/admin/form-request"
-                                        ? "bg-blue-600 hover:bg-blue-700"
-                                        : "hover:bg-gray-700"
-                                }`}
+                                className={`flex items-center p-2 rounded-lg group ${location.pathname === "/admin/form-request"
+                                    ? "bg-blue-600 hover:bg-blue-700"
+                                    : "hover:bg-gray-700"
+                                    }`}
                             >
                                 <svg
                                     className="shrink-0 w-5 h-5 transition duration-75 text-white group-hover:text-white"
@@ -109,11 +132,10 @@ const LayoutAdmin =() => {
                         <li>
                             <Link
                                 to="/admin/student"
-                                className={`flex items-center p-2 rounded-lg group ${
-                                    location.pathname === "/admin/student"
-                                        ? "bg-blue-600 hover:bg-blue-700"
-                                        : "hover:bg-gray-700"
-                                }`}
+                                className={`flex items-center p-2 rounded-lg group ${location.pathname === "/admin/student"
+                                    ? "bg-blue-600 hover:bg-blue-700"
+                                    : "hover:bg-gray-700"
+                                    }`}
                             >
                                 <svg
                                     className="shrink-0 w-5 h-5 transition duration-75 text-white group-hover:text-white"
@@ -127,30 +149,24 @@ const LayoutAdmin =() => {
                                 <span className="flex-1 ms-3 whitespace-nowrap">Students</span>
                             </Link>
                         </li>
-                        <li>
-                            <Link
-                                to="/admin/products"
-                                className={`flex items-center p-2 rounded-lg group ${
-                                    location.pathname === "/admin/products"
-                                        ? "bg-blue-600 hover:bg-blue-700"
-                                        : "hover:bg-gray-700"
-                                }`}
+                        <li onClick={() => logout()} className="flex items-center p-2 rounded-lg group hover:bg-gray-700 cursor-pointer">
+
+
+                            <svg
+                                className="shrink-0 w-5 h-5 transition duration-75 text-white group-hover:text-white"
+                                aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="currentColor"
+                                viewBox="0 0 18 20"
                             >
-                                <svg
-                                    className="shrink-0 w-5 h-5 transition duration-75 text-white group-hover:text-white"
-                                    aria-hidden="true"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="currentColor"
-                                    viewBox="0 0 18 20"
-                                >
-                                    <path d="M17 5.923A1 1 0 0 0 16 5h-3V4a4 4 0 1 0-8 0v1H2a1 1 0 0 0-1 .923L.086 17.846A2 2 0 0 0 2.08 20h13.84a2 2 0 0 0 1.994-2.153L17 5.923ZM7 9a1 1 0 0 1-2 0V7h2v2Zm0-5a2 2 0 1 1 4 0v1H7V4Zm6 5a1 1 0 1 1-2 0V7h2v2Z" />
-                                </svg>
-                                <span className="flex-1 ms-3 whitespace-nowrap">Products</span>
-                            </Link>
+                                <path d="M17 5.923A1 1 0 0 0 16 5h-3V4a4 4 0 1 0-8 0v1H2a1 1 0 0 0-1 .923L.086 17.846A2 2 0 0 0 2.08 20h13.84a2 2 0 0 0 1.994-2.153L17 5.923ZM7 9a1 1 0 0 1-2 0V7h2v2Zm0-5a2 2 0 1 1 4 0v1H7V4Zm6 5a1 1 0 1 1-2 0V7h2v2Z" />
+                            </svg>
+                            <span className="flex-1 ms-3 whitespace-nowrap">Logout</span>
+
                         </li>
                     </ul>
                 </div>
-            </aside>
+            </aside >
 
             {/* Main Content Area */}
             {/* Added a hamburger button for mobile to toggle sidebar */}
@@ -169,10 +185,10 @@ const LayoutAdmin =() => {
                         </svg>
                     </button>
                 </div>
-            
-                  
-                     <Outlet /> 
-                
+
+
+                <Outlet />
+
             </main>
         </>
     );

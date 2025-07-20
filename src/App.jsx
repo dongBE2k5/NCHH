@@ -58,6 +58,7 @@ import Layout from "./pages/Admin/Layout";
 import StudentManagementPage from "./pages/Admin/StudentManagementPage";
 import DocumentViewerPage from "./pages/Student/DocumentViewerPage";
 import EditFormPage from "./pages/Admin/EditFormPage";
+import ShowFormPage from "./pages/Student/ShowFormPage";
 
 
 
@@ -76,6 +77,7 @@ function App() {
           <Route index element={<HomePage />} />
           <Route path="status" element={<ApplicationStatusPage />} />
           <Route path="form-user" element={<ApplicationFormPage />} />
+          <Route path="show-user" element={<ShowFormPage />} />
 
           <Route path="forms" element={<FormList />} />
           {/* Lưu ý: ":id" và ":formID" là các tham số động */}

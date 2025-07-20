@@ -1,75 +1,146 @@
+// FormTreeItem.jsx
 import React, { useState } from 'react';
+// Thay đổi import từ react-icons sang @heroicons/react
+import { FolderIcon, DocumentTextIcon, ClipboardDocumentIcon, ChevronRightIcon, ChevronDownIcon, PlusIcon, PencilIcon, TrashIcon, DocumentDuplicateIcon, EyeIcon } from '@heroicons/react/24/outline'; // Thêm các icons mới
 
-// FormTreeItem Component
-// Added onLayout prop to handle navigation to Layout page
-const FormTreeItem = ({ item, onEdit, onDelete, onAddChild, onLayout, depth = 0, showMessage }) => {
+/**
+ * FormTreeItem Component
+ * Component này hiển thị một mục trong cây (Thư mục, Biểu mẫu, hoặc Ghi chú)
+ * và các hành động liên quan.
+ * @param {object} item - Dữ liệu của mục (id, name, type, children, parentId, content).
+ * @param {function} onEdit - Hàm xử lý sự kiện sửa.
+ * @param {function} onDelete - Hàm xử lý sự kiện xóa.
+ * @param {function} onAddChild - Hàm xử lý sự kiện thêm mục con (chỉ cho thư mục).
+ * @param {function} onLayout - Hàm xử lý sự kiện xem layout (chỉ cho biểu mẫu).
+ * @param {function} onViewNote - Hàm xử lý sự kiện xem ghi chú (chỉ cho ghi chú).
+ * @param {number} depth - Cấp độ sâu của mục trong cây, dùng để thụt lề.
+ */
+const FormTreeItem = ({ item, onEdit, onDelete, onAddChild, onLayout, onViewNote, depth = 0 }) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
-    // Calculate left padding for indentation
-    const paddingLeft = `${depth * 1.5}rem`; // 1.5rem per depth level
+    // Calculate left padding based on depth
+    const paddingLeft = `${depth * 1.5}rem`;
+
+    // Helper function to get icon based on item type, using Heroicons
+    const getIcon = () => {
+        switch (item.type) {
+            case 'folder':
+                return <FolderIcon className="w-5 h-5 text-yellow-500" />;
+            case 'form':
+                return <DocumentTextIcon className="w-5 h-5 text-blue-500" />;
+            case 'note':
+                return <ClipboardDocumentIcon className="w-5 h-5 text-green-500" />;
+            default:
+                return null;
+        }
+    };
+
+    const handleDeleteClick = (e) => {
+      e.stopPropagation(); // Prevent folder toggle
+      if (window.confirm(`Bạn có chắc chắn muốn xóa "${item.name}"?`)) {
+        onDelete(item.id, item.name, item.type);
+      }
+    };
+
+    // Modified handleEditClick to pass the entire item object
+    const handleEditClick = (e) => {
+      e.stopPropagation(); // Prevent folder toggle
+      onEdit(item); // Pass the entire item object
+    };
+
+    const handleAddChildClick = (e) => {
+      e.stopPropagation(); // Prevent folder toggle
+      onAddChild(item.id, item.name);
+    };
+
+    const handleLayoutClick = (e) => {
+      e.stopPropagation();
+      onLayout(item.id);
+    };
+
+    // Modified handleViewNoteClick to pass noteName and noteContent
+    const handleViewNoteClick = (e) => {
+      e.stopPropagation();
+      onViewNote(item.name, item.content); // Pass note name and content
+    };
 
     return (
         <div className="flex flex-col">
             <div className="flex items-center py-2 px-3 rounded-md hover:bg-gray-50 transition-colors duration-200" style={{ paddingLeft }}>
-                {/* Expand/Collapse Toggle for Folders */}
-                {item.isFolder && (
+                {/* Expand/Collapse button for folders with children */}
+                {item.type === 'folder' && item.children && item.children.length > 0 && (
                     <button
                         onClick={() => setIsExpanded(!isExpanded)}
                         className="mr-2 text-gray-600 hover:text-gray-900 focus:outline-none"
                     >
-                        {isExpanded ? (
-                            <svg className="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg> // Chevron down
-                        ) : (
-                            <svg className="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg> // Chevron right
-                        )}
+                        {isExpanded ? <ChevronDownIcon className="w-4 h-4" /> : <ChevronRightIcon className="w-4 h-4" />}
                     </button>
                 )}
-                {/* Icon for Folder or File */}
-                <span className="mr-2 text-gray-500">
-                    {item.isFolder ? (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg> // Folder icon
-                    ) : (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> // Document icon
-                    )}
-                </span>
+
+                {/* Icon for Folder, Form, or Note */}
+                <span className="mr-2">{getIcon()}</span>
+
                 {/* Item Name */}
                 <span className="flex-grow text-sm font-medium text-gray-800">{item.name}</span>
 
-                {/* Actions */}
+                {/* Action buttons */}
                 <div className="flex items-center gap-2">
-                    {item.isFolder && (
+                    {/* "Add" button only for Folders */}
+                    {item.type === 'folder' && (
                         <button
-                            onClick={() => onAddChild(item.id, item.name)}
-                            className="px-2 py-1 text-xs font-medium text-purple-600 bg-purple-50 border border-purple-200 rounded-md hover:bg-purple-100 transition-colors duration-200"
+                            onClick={handleAddChildClick}
+                            className="p-1 text-gray-500 hover:text-purple-600 transition-colors duration-200"
+                            title="Thêm mới"
                         >
-                            Add
+                            <PlusIcon className="w-4 h-4" />
                         </button>
                     )}
-                    <button
-                        onClick={() => onEdit(item.id, item.name, item.isFolder, item.parentId)}
-                        className="px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors duration-200"
-                    >
-                        Edit
-                    </button>
-                    <button
-                        onClick={() => onDelete(item.id, item.name, item.isFolder)}
-                        className="px-2 py-1 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 transition-colors duration-200"
-                    >
-                        Delete
-                    </button>
-                    {!item.isFolder && (
+                    
+                    {/* "Layout" button only for Forms */}
+                    {item.type === 'form' && (
                         <button
-                            onClick={() => onLayout(item.id)} // Gọi onLayout và truyền item.id
-                            className="px-2 py-1 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded-md hover:bg-green-100 transition-colors duration-200"
+                            onClick={handleLayoutClick}
+                            className="p-1 text-gray-500 hover:text-indigo-600 transition-colors duration-200"
+                            title="Thiết kế biểu mẫu"
                         >
-                            Layout
+                            <DocumentDuplicateIcon className="w-4 h-4" /> {/* Changed to DocumentDuplicateIcon for layout */}
                         </button>
                     )}
+
+                    {/* "View" button only for Notes */}
+                    {item.type === 'note' && (
+                        <button
+                            onClick={handleViewNoteClick}
+                            className="p-1 text-gray-500 hover:text-teal-600 transition-colors duration-200"
+                            title="Xem ghi chú"
+                        >
+                            <EyeIcon className="w-4 h-4" />
+                        </button>
+                    )}
+
+                    {/* "Edit" button */}
+                    <button
+                        onClick={handleEditClick}
+                        className="p-1 text-gray-500 hover:text-blue-600 transition-colors duration-200"
+                        title="Chỉnh sửa"
+                    >
+                        <PencilIcon className="w-4 h-4" />
+                    </button>
+
+                    {/* "Delete" button */}
+                    <button
+                        onClick={handleDeleteClick}
+                        className="p-1 text-gray-500 hover:text-red-600 transition-colors duration-200"
+                        title="Xóa"
+                    >
+                        <TrashIcon className="w-4 h-4" />
+                    </button>
                 </div>
             </div>
-            {/* Render Children if Expanded and Children Exist */}
+
+            {/* Render children if expanded */}
             {isExpanded && item.children && item.children.length > 0 && (
-                <div className="pl-4 border-l border-gray-200 ml-2"> {/* Visual indentation for children */}
+                <div className="pl-4 border-l border-gray-200 ml-4">
                     {item.children.map((child) => (
                         <FormTreeItem
                             key={child.id}
@@ -77,9 +148,9 @@ const FormTreeItem = ({ item, onEdit, onDelete, onAddChild, onLayout, depth = 0,
                             onEdit={onEdit}
                             onDelete={onDelete}
                             onAddChild={onAddChild}
-                            onLayout={onLayout} // Truyền onLayout xuống các FormTreeItem con
+                            onLayout={onLayout}
+                            onViewNote={onViewNote}
                             depth={depth + 1}
-                            showMessage={showMessage}
                         />
                     ))}
                 </div>
