@@ -1,14 +1,14 @@
 // src/services/FormService.js
 import axios from 'axios';
 import{API_BASE_URL} from './BaseUrl'
-const API_URL = `${API_BASE_URL}/folder`;
+const API_URL = `${API_BASE_URL}/form-requests`;
 
-const FolderService = {
-  fetchForms: async () => {
+const FormRequestService = {
+  fetchData: async () => {
     const response = await axios.get(API_URL);
     return response.data;
   },
-  saveForm: async (name, parentId, isFolder) => {
+  saveData: async (name, parentId, isFolder) => {
     const response = await axios.post(API_URL, {
       name,
       parent_id: parentId,
@@ -16,13 +16,13 @@ const FolderService = {
     });
     return response.data;
   },
-  updateForm: async (id, newName) => {
+  updateData: async (id, newName) => {
     const response = await axios.put(`${API_URL}/${id}`, {
       name: newName,
     });
     return response.data;
   },
-  deleteForm: async (id) => {
+  deleteData: async (id) => {
     const response = await axios.delete(`${API_URL}/${id}`);
     return response.data;
   },
@@ -33,4 +33,4 @@ const FolderService = {
 
 };
 
-export default FolderService;
+export default FormRequestService;

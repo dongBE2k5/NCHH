@@ -59,6 +59,7 @@ import StudentManagementPage from "./pages/Admin/StudentManagementPage";
 import DocumentViewerPage from "./pages/Student/DocumentViewerPage";
 import EditFormPage from "./pages/Admin/EditFormPage";
 import ShowFormPage from "./pages/Student/ShowFormPage";
+import ShowFormRequest from "./pages/Admin/ShowFormRequest";
 
 
 
@@ -124,6 +125,7 @@ function App() {
           <Route index element={<DashboardAdmin />} /> {/* Route mặc định cho /admin */}
 
           {/* Các route con, chỉ cần khai báo phần cuối của path */}
+          <Route path="request" element={<ShowFormRequest />} />
           <Route path="student" element={<StudentManagementPage />} />
           <Route path="forms" element={<CreateFieldForm />} />
           <Route path="create-layout/:id" element={<CreateLayoutForm />} />

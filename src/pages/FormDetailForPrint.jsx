@@ -61,7 +61,7 @@ function FormDetailForPrint() {
     showCustomToast("Đang tạo và tải file lên Google Drive...", "info");
 
     try {
-      const response = await axios.get(`http://localhost:8000/api/google-drive/generate-upload/${mssv}/${formRequestId}`);
+      const response = await axios.get(`http://localhost:8000/api/google-drive/generate-upload/${formRequestId}`);
       const result = response.data;
 
       if (result.success && result.url) {

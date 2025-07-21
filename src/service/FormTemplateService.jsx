@@ -1,7 +1,7 @@
 // src/service/FormTemplateService.js
 import axios from 'axios';
-
-const API_URL = 'http://localhost:8000/api/type-of-forms';
+import{API_BASE_URL} from './BaseUrl'
+const API_URL = `${API_BASE_URL}/type-of-forms`;
 
 const FormTemplateService = {
     fetchForms: async () => {
