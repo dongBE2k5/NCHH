@@ -176,11 +176,11 @@ export default function FormDetailStudent({ selectedId }) {
         icon: swalIcon,
         confirmButtonText: 'Hoàn tất',
         customClass: {
-          confirmButton: 'swal-button-custom-confirm',
+          confirmButton: 'swal-button-custom-confirm py-2 px-3 hover:text-white',
         },
         buttonsStyling: false,
       }).then(() => {
-        // navigate('/'); // Navigate back to the home/main application form page
+        navigate('/'); // Navigate back to the home/main application form page
       });
 
     } catch (error) {
@@ -231,7 +231,7 @@ export default function FormDetailStudent({ selectedId }) {
                               hover:shadow-md hover:border-indigo-300 transition-all duration-300 ease-in-out">
                 <div className="space-y-2">
                   {/* Label */}
-                  <label htmlFor={`field-${field.id}`} className="block text-base font-medium text-gray-800 mb-1">
+                  <label htmlFor={`field-${field.id}`} className="block text-base text-start w-full font-medium text-gray-800 mb-1">
                     {field.label}
                     {field.is_required && <span className="text-red-500 ml-2 text-sm font-normal">(Bắt buộc)</span>}
                   </label>
@@ -241,7 +241,7 @@ export default function FormDetailStudent({ selectedId }) {
                     <input
                       id={`field-${field.id}`}
                       type="text"
-                      className="w-full border border-gray-300 px-4 py-2.5 rounded-lg
+                      className="w-full !max-w-full border border-gray-300 px-4 py-2.5 rounded-lg
                                  focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none
                                  transition-all duration-300 text-gray-800 placeholder-gray-400 text-base"
                       value={formState[field.id] || ""}
@@ -255,7 +255,7 @@ export default function FormDetailStudent({ selectedId }) {
                     <input
                       id={`field-${field.id}`}
                       type="number"
-                      className="w-full border border-gray-300 px-4 py-2.5 rounded-lg
+                      className="w-full !max-w-full border border-gray-300 px-4 py-2.5 rounded-lg
                                  focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none
                                  transition-all duration-300 text-gray-800 placeholder-gray-400 text-base"
                       value={formState[field.id] || ""}
@@ -269,7 +269,7 @@ export default function FormDetailStudent({ selectedId }) {
                     <textarea
                       id={`field-${field.id}`}
                       rows={5}
-                      className="w-full border border-gray-300 px-4 py-2.5 rounded-lg
+                      className="w-full !max-w-full border border-gray-300 px-4 py-2.5 rounded-lg
                                  focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none
                                  transition-all duration-300 text-gray-800 placeholder-gray-400 text-base"
                       value={formState[field.id] || ""}
@@ -283,7 +283,7 @@ export default function FormDetailStudent({ selectedId }) {
                     <input
                       id={`field-${field.id}`}
                       type="date"
-                      className="w-full border border-gray-300 px-4 py-2.5 rounded-lg
+                      className="w-full !max-w-full border border-gray-300 px-4 py-2.5 rounded-lg
                                  focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none
                                  transition-all duration-300 text-gray-800 text-base"
                       value={formState[field.id] || ""}
@@ -298,7 +298,7 @@ export default function FormDetailStudent({ selectedId }) {
                         <label key={idx} htmlFor={`field-${field.id}-${idx}`} className="inline-flex items-center space-x-3 cursor-pointer text-gray-700 text-base hover:text-indigo-600 transition-colors duration-200">
                           <input
                             id={`field-${field.id}-${idx}`}
-                            className="form-radio h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 cursor-pointer transition-colors duration-200"
+                            className="form-radio  h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 cursor-pointer transition-colors duration-200"
                             type="radio"
                             name={`field-${field.id}`} // Use name for radio group
                             value={opt}

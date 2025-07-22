@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios'; // Import axios
 import { XMarkIcon } from '@heroicons/react/20/solid'; // Import icon đóng modal
 import { CheckCircleIcon, ExclamationCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'; // Icons cho toast
+import { API_BASE_URL } from '../service/BaseUrl';
 
 function FormDetailForPrint() {
   const { mssv, id: folderId ,date } = useParams();
@@ -31,7 +32,7 @@ function FormDetailForPrint() {
   useEffect(() => {
     const fetchFormsInFolder = async () => {
       try {
-        const res = await axios.get(`http://localhost:8000/api/form-values/${mssv}/${folderId}/${date}`);
+        const res = await axios.get(`${API_BASE_URL}/form-values/${mssv}/${folderId}/${date}`);
         const data = res.data; // axios trả về data trong thuộc tính .data
 
         setForms(data || []);
@@ -61,7 +62,7 @@ function FormDetailForPrint() {
     showCustomToast("Đang tạo và tải file lên Google Drive...", "info");
 
     try {
-      const response = await axios.get(`http://localhost:8000/api/google-drive/generate-upload/${formRequestId}`);
+      const response = await axios.get(`${API_BASE_URL}/google-drive/generate-upload/${formRequestId}`);
       const result = response.data;
 
       if (result.success && result.url) {

@@ -127,7 +127,7 @@ function App() {
           {/* Các route con, chỉ cần khai báo phần cuối của path */}
           <Route path="request" element={<ShowFormRequest />} />
           <Route path="student" element={<StudentManagementPage />} />
-          <Route path="forms" element={<CreateFieldForm />} />
+          <Route path="field-form" element={<CreateFieldForm />} />
           <Route path="create-layout/:id" element={<CreateLayoutForm />} />
           <Route path="form-management" element={<FormManagement />} />
           <Route path="design-layout/:formCode" element={<FormLayoutDesigner />} />

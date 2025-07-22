@@ -1,8 +1,8 @@
 // src/service/NoteService.js
 import axios from 'axios';
+import { API_BASE_URL } from './BaseUrl';
 
-
-const API_URL = 'http://localhost:8000/api/notes'; // Thay đổi URL API của bạn
+const API_URL = `${API_BASE_URL}/notes`; // Thay đổi URL API của bạn
 
 class NoteService {
     fetchNotes() {

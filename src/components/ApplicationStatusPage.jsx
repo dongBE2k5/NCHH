@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from 'framer-motion';
 import axios from 'axios'; // Import axios
-
+import { API_BASE_URL } from '../service/BaseUrl';
 function ApplicationStatusPage() {
     // applicationStatus will now be an ARRAY of applications fetched from the API
     const [applicationStatus, setApplicationStatus] = useState(null); 
@@ -23,7 +23,7 @@ function ApplicationStatusPage() {
 
         try {
             // Make an API call to the backend
-            const response = await axios.get(`http://localhost:8000/api/request-students/search/${studentId.trim()}`);
+            const response = await axios.get(`${API_BASE_URL}/request-students/search/${studentId.trim()}`);
             const result = response.data; // Assuming the API returns JSON data directly
 
             console.log("API response:", result);

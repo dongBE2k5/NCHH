@@ -71,7 +71,7 @@ const FormTreeItem = ({ item, onEdit, onDelete, onAddChild, onLayout, onViewNote
                 {item.type === 'folder' && item.children && item.children.length > 0 && (
                     <button
                         onClick={() => setIsExpanded(!isExpanded)}
-                        className="mr-2 text-gray-600 hover:text-gray-900 focus:outline-none"
+                        className="mr-2 text-gray-600 hover:text-white focus:outline-none"
                     >
                         {isExpanded ? <ChevronDownIcon className="w-4 h-4" /> : <ChevronRightIcon className="w-4 h-4" />}
                     </button>
@@ -89,7 +89,7 @@ const FormTreeItem = ({ item, onEdit, onDelete, onAddChild, onLayout, onViewNote
                     {item.type === 'folder' && (
                         <button
                             onClick={handleAddChildClick}
-                            className="p-1 text-gray-500 hover:text-purple-600 transition-colors duration-200"
+                            className="p-1 text-gray-500 hover:text-purple-600 hover:bg-transparent hover:scale-125 transition-colors duration-200"
                             title="Thêm mới"
                         >
                             <PlusIcon className="w-4 h-4" />
@@ -100,7 +100,7 @@ const FormTreeItem = ({ item, onEdit, onDelete, onAddChild, onLayout, onViewNote
                     {item.type === 'form' && (
                         <button
                             onClick={handleLayoutClick}
-                            className="p-1 text-gray-500 hover:text-indigo-600 transition-colors duration-200"
+                            className="p-1 text-gray-500 hover:text-indigo-600 hover:bg-transparent hover:scale-125 transition-colors duration-200"
                             title="Thiết kế biểu mẫu"
                         >
                             <DocumentDuplicateIcon className="w-4 h-4" /> {/* Changed to DocumentDuplicateIcon for layout */}
@@ -111,7 +111,7 @@ const FormTreeItem = ({ item, onEdit, onDelete, onAddChild, onLayout, onViewNote
                     {item.type === 'note' && (
                         <button
                             onClick={handleViewNoteClick}
-                            className="p-1 text-gray-500 hover:text-teal-600 transition-colors duration-200"
+                            className="p-1 text-gray-500 hover:text-teal-600 hover:bg-transparent hover:scale-125 transition-colors duration-200"
                             title="Xem ghi chú"
                         >
                             <EyeIcon className="w-4 h-4" />
@@ -121,7 +121,7 @@ const FormTreeItem = ({ item, onEdit, onDelete, onAddChild, onLayout, onViewNote
                     {/* "Edit" button */}
                     <button
                         onClick={handleEditClick}
-                        className="p-1 text-gray-500 hover:text-blue-600 transition-colors duration-200"
+                        className="p-1 text-gray-500 hover:text-blue-600 hover:bg-transparent hover:scale-125 transition-colors duration-200"
                         title="Chỉnh sửa"
                     >
                         <PencilIcon className="w-4 h-4" />
@@ -130,7 +130,7 @@ const FormTreeItem = ({ item, onEdit, onDelete, onAddChild, onLayout, onViewNote
                     {/* "Delete" button */}
                     <button
                         onClick={handleDeleteClick}
-                        className="p-1 text-gray-500 hover:text-red-600 transition-colors duration-200"
+                        className="p-1 text-gray-500 hover:text-red-600 hover:bg-transparent hover:scale-125 transition-colors duration-200"
                         title="Xóa"
                     >
                         <TrashIcon className="w-4 h-4" />

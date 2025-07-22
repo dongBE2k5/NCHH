@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../public/image/logotdc.jpg"
+import { API_BASE_URL } from '../service/BaseUrl';
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -10,7 +11,7 @@ function Login() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:8000/api/login", {
+      const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

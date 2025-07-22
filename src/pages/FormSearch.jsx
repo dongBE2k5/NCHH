@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from "framer-motion";
+import { API_BASE_URL } from '../service/BaseUrl';
 import {
     DocumentTextIcon,
     MagnifyingGlassIcon,
@@ -62,7 +63,7 @@ function FormSearch() {
         }
 
         try {
-            const response = await axios.get(`http://localhost:8000/api/form-value/${searchTerm.trim()}`);
+            const response = await axios.get(`${API_BASE_URL}/form-value/${searchTerm.trim()}`);
             const data = response.data;
             
             // Bước 1: Nhóm tất cả kết quả theo ngày
@@ -137,6 +138,9 @@ function FormSearch() {
     };
 
     const handleViewDetail = (studentCode, formRequestId, date) => {
+        console.log("studentCode", studentCode);
+        console.log("formRequestId", formRequestId);
+        console.log("date", date);
         if (!studentCode || !formRequestId || !date || studentCode === 'N/A') {
             setError("Không đủ thông tin để xem chi tiết. Vui lòng kiểm tra lại dữ liệu.");
             return;

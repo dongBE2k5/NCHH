@@ -146,7 +146,7 @@ function HomePage() {
                     >
                         Tại sao chọn chúng tôi?
                     </motion.h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8"> {/* Changed to grid-cols-2 */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8"> {/* Changed to grid-cols-2 */}
                         <motion.div
                             onClick={() => navigate("/form-user")}
                             whileHover={{ scale: 1.05 }}
@@ -168,6 +168,17 @@ function HomePage() {
                             </svg>
                             <h4 className="text-xl font-semibold mb-2">Theo dõi trạng thái</h4>
                             <p>Cập nhật tiến độ đơn của bạn theo thời gian thực.</p>
+                        </motion.div>
+                        <motion.div
+                            onClick={() => navigate("/search")}
+                            whileHover={{ scale: 1.05 }}
+                            className="bg-white p-6 rounded-lg cursor-pointer shadow-lg text-center"
+                        >
+                            <svg className="w-12 h-12 mx-auto mb-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm0 14a6 6 0 110-12 6 6 0 010 12zm-1-9h2v6H9V7zm0 8h2v2H9v-2z" />
+                            </svg>
+                            <h4 className="text-xl font-semibold mb-2">Tra cứu đơn học vụ</h4>
+                            <p>Tìm kiếm đơn học vụ của bạn.</p>
                         </motion.div>
                         {/* The 'Tài liệu học vụ' div has been removed */}
                     </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { XMarkIcon } from '@heroicons/react/20/solid';
 import { CheckCircleIcon, ExclamationCircleIcon, InformationCircleIcon, PlusCircleIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
-
+import { API_BASE_URL } from '../../service/BaseUrl';
 function StudentManagementPage() {
     const [students, setStudents] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -41,7 +41,7 @@ function StudentManagementPage() {
             setIsLoading(true);
             setError(null);
             try {
-                const response = await axios.get('http://localhost:8000/api/student');
+                const response = await axios.get(`${API_BASE_URL}/student`);
                 setStudents(response.data);
             } catch (err) {
                 console.error("Error fetching students:", err);
@@ -92,7 +92,7 @@ function StudentManagementPage() {
         try {
             if (isEditing) {
                 // Update existing student
-                const response = await axios.put(`http://localhost:8000/api/student/${currentStudent.id}`, currentStudent);
+                const response = await axios.put(`${API_BASE_URL}/student/${currentStudent.id}`, currentStudent);
                 setStudents(students.map(s => s.id === currentStudent.id ? response.data : s));
                 showCustomToast("Cập nhật sinh viên thành công!", "success");
             } else {
@@ -117,7 +117,7 @@ function StudentManagementPage() {
             setIsLoading(true);
             setError(null);
             try {
-                await axios.delete(`http://localhost:8000/api/student/${studentId}`);
+                await axios.delete(`${API_BASE_URL}/student/${studentId}`);
                 setStudents(students.filter(s => s.id !== studentId));
                 showCustomToast("Xóa sinh viên thành công!", "success");
             } catch (err) {

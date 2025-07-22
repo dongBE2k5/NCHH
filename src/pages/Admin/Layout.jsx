@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-
+import { API_BASE_URL } from '../../service/BaseUrl';
 const Layout = () => {
     const [file, setFile] = useState(null);
     const [message, setMessage] = useState('');
@@ -26,7 +26,7 @@ const Layout = () => {
     useEffect(() => {
         async function fetchDependencies() {
             try {
-                const res = await axios.get(`http://localhost:8000/api/forms/${id}/dependencies`);
+                const res = await axios.get(`${API_BASE_URL}/forms/${id}/dependencies`);
                 const data = res.data;
                 console.log("dependency_form_ids", data.dependency_form_ids);
 
@@ -42,7 +42,7 @@ const Layout = () => {
     useEffect(() => {
         async function getFormDetail() {
             try {
-                const response = await axios.get(`http://localhost:8000/api/forms/${id}`);
+                const response = await axios.get(`${API_BASE_URL}/forms/${id}`);
                 const result = response.data;
                 if (result.field_form) {
                     const formattedFields = result.field_form.map((item) => ({
@@ -62,7 +62,7 @@ const Layout = () => {
 
         async function getAllForm() {
             try {
-                const response = await axios.get(`http://localhost:8000/api/forms`);
+                const response = await axios.get(`${API_BASE_URL}/forms`);
                 const data = response.data;
                 console.log("data1", data);
                 setAllForm(data);
@@ -102,7 +102,7 @@ const Layout = () => {
 
         console.log("uri", uri);
         try {
-            const response = await axios.post('http://localhost:8000/api/upload-docx1', formData, {
+            const response = await axios.post(`${API_BASE_URL}/upload-docx1`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
@@ -133,7 +133,7 @@ const Layout = () => {
         formData.append('docx_file', secondFile);
 
         try {
-            const response = await axios.post('http://localhost:8000/api/google-drive/upload-docx', formData, {
+            const response = await axios.post(`${API_BASE_URL}/google-drive/upload-docx`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
@@ -150,7 +150,7 @@ const Layout = () => {
                 console.log("Extracted File ID:", fileId);
 
                 try {
-                    const pdfResponse = await axios.get(`http://localhost:8000/api/google-drive/export-pdf?fileId=${fileId}`);
+                    const pdfResponse = await axios.get(`${API_BASE_URL}/google-drive/export-pdf?fileId=${fileId}`);
                     const { pdf_url, file_name } = pdfResponse.data;
                     console.log(pdfResponse.data);
                     console.log(pdfResponse.data.pdf_url);
@@ -213,7 +213,7 @@ const Layout = () => {
 
     const updateLayout = async (data) => {
         try {
-            const res2 = await axios.post(`http://localhost:8000/api/admin/create-layout-form/${id}`, {
+            const res2 = await axios.post(`${API_BASE_URL}/admin/create-layout-form/${id}`, {
                 "form_model": data.filename
             });
 
@@ -256,7 +256,7 @@ const Layout = () => {
                 formData.append('doc_file', secondFile); // Use a new key like 'pdf_file' for the actual file
             }
 
-            const response = await axios.post(`http://localhost:8000/api/forms/${id}`, formData, {
+            const response = await axios.post(`${API_BASE_URL}/forms/${id}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data' // Important for FormData
                 }
@@ -283,7 +283,7 @@ const Layout = () => {
 
     const saveDependencyForm = async () => {
         try {
-            const response = await axios.post(`http://localhost:8000/api/forms/dependency`, {
+            const response = await axios.post(`${API_BASE_URL}/forms/dependency`, {
                 'form_id': id,
                 'dependency_form_id': selectedForms,
             });

@@ -106,6 +106,28 @@ const LayoutAdmin = () => {
                         </li>
                         <li>
                             <Link
+                                to="/admin/field-form"
+                                className={`flex items-center p-2 rounded-lg group ${location.pathname === "/admin/field-form"
+                                    ? "bg-blue-600 hover:bg-blue-700"
+                                    : "hover:bg-gray-700"
+                                    }`}
+                            >
+                                <svg
+                                    className="shrink-0 w-5 h-5 transition duration-75 text-white group-hover:text-white"
+                                    aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path d="M10 20a10 10 0 1 1 0-20 10 10 0 0 1 0 20Zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm0-9a1 1 0 0 1 1 1v4a1 1 0 0 1-2 0v-4a1 1 0 0 1 1-1Zm0-7a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z" />
+                                </svg>
+                                <span className="flex-1 ms-3 whitespace-nowrap">
+                                    Quản lí Field
+                                </span>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
                                 to="/admin/form-request"
                                 className={`flex items-center p-2 rounded-lg group ${location.pathname === "/admin/form-request"
                                     ? "bg-blue-600 hover:bg-blue-700"

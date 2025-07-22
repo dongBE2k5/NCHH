@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Swal from 'sweetalert2';
+import { API_BASE_URL } from '../../service/BaseUrl';
 import {
     PlusIcon, // For Plus
     ArrowDownTrayIcon, // Replaced SaveIcon with ArrowDownTrayIcon for Heroicons v2 compatibility
@@ -52,7 +53,7 @@ export default function CreateFieldForm() {
         const fetchTypeOfForm = async () => {
             setIsLoadingForms(true);
             try {
-                const response = await fetch('http://localhost:8000/api/forms');
+                const response = await fetch(`${API_BASE_URL}/forms`);
                 if (!response.ok) throw new Error('Failed to fetch form types');
                 const data = await response.json();
                 setTypeOfForm(data);
@@ -76,7 +77,7 @@ export default function CreateFieldForm() {
     const fetchFieldList = useCallback(async (formId) => {
         if (!formId) return;
         try {
-            const res = await fetch(`http://localhost:8000/api/forms/${formId}`);
+            const res = await fetch(`${API_BASE_URL}/forms/${formId}`);
             if (!res.ok) throw new Error('Lỗi khi lấy danh sách trường');
             const data = await res.json();
             setSelectedForm(data);
@@ -108,7 +109,7 @@ export default function CreateFieldForm() {
             // Ensure options are an array, even if empty or null
             fieldData.options = Array.isArray(fieldData.options) ? fieldData.options : [];
 
-            const res = await fetch(`http://localhost:8000/api/forms/${selectedForm.id}/fields/${fieldToEdit.id}`, {
+            const res = await fetch(`${API_BASE_URL}/forms/${selectedForm.id}/fields/${fieldToEdit.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -159,7 +160,7 @@ export default function CreateFieldForm() {
         setFieldToEdit(null);
         if (typeId) {
             try {
-                const response = await fetch(`http://localhost:8000/api/forms/${typeId}`);
+                const response = await fetch(`${API_BASE_URL}/forms/${typeId}`);
                 if (!response.ok) throw new Error('Failed to fetch selected form');
                 const data = await response.json();
                 setSelectedForm(data);
@@ -202,7 +203,7 @@ export default function CreateFieldForm() {
 
         setIsSaving(true);
         try {
-            const response = await fetch(`http://localhost:8000/api/forms/${selectedForm.id}`, {
+            const response = await fetch(`${API_BASE_URL}/forms/${selectedForm.id}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -247,7 +248,7 @@ export default function CreateFieldForm() {
         }));
 
         try {
-            const response = await fetch('http://localhost:8000/api/field/update-order', {
+            const response = await fetch(`${API_BASE_URL}/field/update-order`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -281,7 +282,7 @@ export default function CreateFieldForm() {
 
         if (result.isConfirmed) {
             try {
-                const response = await fetch(`http://localhost:8000/api/forms/${selectedForm.id}/fields/${fieldId}`, {
+                const response = await fetch(`${API_BASE_URL}/forms/${selectedForm.id}/fields/${fieldId}`, {
                     method: 'DELETE',
                 });
 
@@ -472,42 +473,51 @@ export default function CreateFieldForm() {
 
                         {selectedForm && (
                             <div className="mt-6 border-t border-gray-200 pt-6">
-                                <h3 className="font-bold text-gray-800 mb-4 text-lg">
-                                    {isEditMode ? "Chỉnh sửa trường" : "Thêm trường mới"}
-                                </h3>
-                                {customFields.length === 0 && !isEditMode && (
-                                    <p className="text-gray-500 text-sm mb-4">
-                                        Nhấn "Thêm Trường" để bắt đầu tạo trường mới cho biểu mẫu này.
-                                    </p>
-                                )}
+
 
                                 {customFields.map((field, index) => renderCustomFieldForm(field, index))}
 
-                                <button
-                                    type="button"
-                                    onClick={addCustomField}
-                                    className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 mt-4 rounded-lg w-full font-semibold shadow-md transition-colors duration-200"
-                                >
-                                    <PlusIcon className="h-5 w-5" /> {isEditMode ? "Thêm trường khác" : "Thêm Trường"}
-                                </button>
+                                {isEditMode && (
+                                    <button
+                                        type="submit"
+                                        className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 mt-3 rounded-lg w-full font-semibold shadow-md transition-colors duration-200"
+                                        disabled={isSaving || customFields.length === 0}
+                                    >
+                                        {isSaving ? (
+                                            <>
+                                                <svg
+                                                    className="animate-spin h-5 w-5 text-white"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <circle
+                                                        className="opacity-25"
+                                                        cx="12"
+                                                        cy="12"
+                                                        r="10"
+                                                        stroke="currentColor"
+                                                        strokeWidth="4"
+                                                    ></circle>
+                                                    <path
+                                                        className="opacity-75"
+                                                        fill="currentColor"
+                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 
+                5.291A7.962 7.962 0 014 12H0c0 
+                3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                    ></path>
+                                                </svg>
+                                                Đang lưu...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <ArrowDownTrayIcon className="h-5 w-5" />
+                                                <span>Lưu thay đổi</span>
+                                            </>
+                                        )}
+                                    </button>
+                                )}
 
-                                <button
-                                    type="submit"
-                                    className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 mt-3 rounded-lg w-full font-semibold shadow-md transition-colors duration-200"
-                                    disabled={isSaving || customFields.length === 0}
-                                >
-                                    {isSaving ? (
-                                        <>
-                                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                            Đang lưu...
-                                        </>
-                                    ) : (
-                                        <>{isEditMode ? <ArrowDownTrayIcon className="h-5 w-5" /> : <PlusIcon className="h-5 w-5" />} {isEditMode ? "Lưu thay đổi" : "Tạo trường"}</>
-                                    )}
-                                </button>
                                 {isEditMode && (
                                     <button
                                         type="button"
@@ -516,7 +526,7 @@ export default function CreateFieldForm() {
                                             setFieldToEdit(null);
                                             setCustomFields([]);
                                         }}
-                                        className="text-red-600 hover:text-red-800 text-sm mt-3 w-full text-center underline"
+                                        className="text-red-600 hover:text-red-800 hover:bg-transparent text-sm mt-3 w-full text-center underline"
                                     >
                                         Hủy chỉnh sửa
                                     </button>
@@ -572,7 +582,7 @@ export default function CreateFieldForm() {
                                             <button
                                                 type="button"
                                                 onClick={() => handleEditField(item)}
-                                                className="text-blue-600 hover:text-blue-800 transition-colors duration-200"
+                                                className="text-blue-600 hover:scale-125 hover:bg-transparent duration-500"
                                                 title="Sửa trường"
                                             >
                                                 <PencilSquareIcon className="h-5 w-5" />
@@ -580,7 +590,7 @@ export default function CreateFieldForm() {
                                             <button
                                                 type="button"
                                                 onClick={() => deleteField(item.id)}
-                                                className="text-red-600 hover:text-red-800 transition-colors duration-200"
+                                                className="text-red-600 hover:scale-125 hover:bg-transparent duration-500"
                                                 title="Xóa trường"
                                             >
                                                 <TrashIcon className="h-5 w-5" />
