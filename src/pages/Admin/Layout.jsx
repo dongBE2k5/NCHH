@@ -28,16 +28,16 @@ const Layout = () => {
             try {
                 const res = await axios.get(`${API_BASE_URL}/forms/${id}/dependencies`);
                 const data = res.data;
-                console.log("dependency_form_ids", data.dependency_form_ids);
+                console.log("dependency_form_ids", data.dependencies);
 
-                setSelectedForms(data.dependency_form_ids || []);
+                setSelectedForms((data.dependencies || []).map(f => f.id));
             } catch (error) {
                 console.error("Lỗi khi tải các biểu mẫu phụ thuộc:", error);
             }
         }
 
         fetchDependencies();
-    }, [id]);
+    }, []);
 
     useEffect(() => {
         async function getFormDetail() {
@@ -308,7 +308,7 @@ const Layout = () => {
     return (
         <div className="flex flex-col md:flex-row gap-6 p-6 bg-gray-100 h-screen pb-10 ">
             {/* Left Panel - Upload */}
-            <div className="w-full md:w-1/3 bg-white p-6 rounded-xl shadow">
+            <div className="w-full md:w-1/3 bg-white p-6 rounded-xl overflow-y-auto shadow">
                 <h2 className="text-xl font-bold text-gray-800 mb-4">📄 Upload file tạo biểu mẫu định dạng .docx</h2>
 
                 <input

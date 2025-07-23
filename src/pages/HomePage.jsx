@@ -14,28 +14,7 @@ function HomePage() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchAllTemplates = async () => {
-            setIsLoadingForms(true);
-            setError(null); // Reset error
-            try {
-                // Sửa URL API để phù hợp với tên bảng 'templates'
-                const url = 'http://nckh.local/api/templates'; // Hoặc đường dẫn API thực tế của bạn
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const result = await response.json();
-                setFormTemplates(result); // Cập nhật state với dữ liệu templates
-            } catch (err) {
-                console.error("Lỗi khi tải danh sách mẫu đơn:", err);
-                setError("Không thể tải danh sách mẫu đơn. Vui lòng thử lại sau.");
-            } finally {
-                setIsLoadingForms(false);
-            }
-        };
-
-        fetchAllTemplates();
-
+        
         // Xử lý scroll (nếu cần cho hiệu ứng header)
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 50);

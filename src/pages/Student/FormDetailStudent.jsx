@@ -1,68 +1,208 @@
+// FormDetailStudent.jsx - Phiên bản đầy đủ đã cập nhật hỗ trợ xử lý form phụ thuộc
+
 import React, { useEffect, useState } from "react";
-import { useParams } from 'react-router-dom';
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from "axios";
 import Swal from 'sweetalert2';
-import { InformationCircleIcon, ExclamationTriangleIcon, ArrowPathIcon } from '@heroicons/react/24/outline'; // Import icons
-import { values } from "pdf-lib";
+import { InformationCircleIcon, ExclamationTriangleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { API_BASE_URL } from '../../service/BaseUrl';
 
 const STUDENT_ID_SESSION_KEY = "verifiedStudentId";
 
-export default function FormDetailStudent({ selectedId }) {
+export default function FormDetailStudent({ selectedId, isEdit = false, valueID }) {
   const [formState, setFormState] = useState({});
   const [fieldForm, setFieldForm] = useState(null);
   const [notification, setNotification] = useState(null);
   const [verifiedStudentId] = useState(() => sessionStorage.getItem(STUDENT_ID_SESSION_KEY) || null);
   const [loading, setLoading] = useState(true);
-  const { id } = useParams(); // 'id' from URL params (used if not passed via prop)
+  const [dependencies, setDependencies] = useState([]);
+  const [currentDependencyIndex, setCurrentDependencyIndex] = useState(0);
+  const [currentFormId, setCurrentFormId] = useState(null);
+
+  const { id } = useParams();
   const navigate = useNavigate();
 
-  // Fetches the form template details and its dependencies
   useEffect(() => {
-    // Prioritize selectedId prop, fallback to URL param 'id'
-    const formToFetchId = selectedId || id;
 
+    if (isEdit) {
+      fetchDataSubmit();
+    }
+    async function fetchDataSubmit() {
+      try {
+        const [detailRes, valueRes] = await Promise.all([
+          fetch(`http://nckh.local/api/forms/${selectedId}`),
+          fetch(`http://nckh.local/api/preview-form/${valueID}`)
+        ]);
+
+        if (!detailRes.ok || !valueRes.ok) throw new Error("Lỗi khi fetch dữ liệu");
+
+        const detailData = await detailRes.json();
+        const valueData = await valueRes.json();
+        const converted = {};
+        valueData.values.forEach(item => {
+          converted[item.field_form_id] = item.value;
+        });
+        setFormState(converted);
+        console.log("detailData", detailData);
+        console.log("valueData", valueData.values);
+        console.log("converted", converted);
+
+
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu:", error);
+      }
+    }
+
+    const formToFetchId = currentDependencyIndex === 0
+      ? (selectedId || id)
+      : dependencies[currentDependencyIndex - 1]?.id;
+  
     if (!formToFetchId) {
-      console.error("No form ID provided to FormDetailStudent.");
+      console.error("Không xác định được formToFetchId.");
       setNotification("Không tìm thấy ID biểu mẫu để hiển thị.");
       setLoading(false);
       return;
     }
+    
+
 
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [formResponse, dependenciesResponse] = await Promise.all([
-          axios.get(`${API_BASE_URL}/forms/${formToFetchId}`),
-          axios.get(`${API_BASE_URL}/forms/${formToFetchId}/dependencies`)
-        ]);
-
+        // 1. Luôn lấy form để hiển thị
+        const formResponse = await axios.get(`${API_BASE_URL}/forms/${formToFetchId}`);
         setFieldForm(formResponse.data);
-
-        const dependenciesData = dependenciesResponse.data;
-        if (dependenciesData.dependencies && dependenciesData.dependencies.length > 0) {
-          const requiredForms = dependenciesData.dependencies
-            .map((form) => form.name)
-            .join(", ");
-          setNotification(`Bạn cần nộp thêm các biểu mẫu sau: ${requiredForms}`);
-        } else {
-          setNotification(null); // No dependencies, clear notification
+        setCurrentFormId(formResponse.data?.id);
+  
+        // 2. CHỈ gọi dependencies khi là form gốc (ban đầu)
+        if (currentDependencyIndex === 0) {
+          const dependenciesResponse = await axios.get(`${API_BASE_URL}/forms/${formToFetchId}/dependencies`);
+          const dependenciesData = dependenciesResponse.data;
+        
+          if (dependenciesData.dependencies?.length > 0) {
+            setDependencies(dependenciesData.dependencies);
+            const requiredForms = dependenciesData.dependencies.map(f => f.name).join(", ");
+            setNotification(`Bạn cần nộp thêm các biểu mẫu sau: ${requiredForms}`);
+          } else {
+            setDependencies([]);
+            setNotification(null);
+          }
         }
+        
+  
       } catch (error) {
-        console.error("Failed to fetch form details or dependencies:", error);
+        console.error("Lỗi khi tải form hoặc dependencies:", error);
         setNotification("Đã xảy ra lỗi khi tải biểu mẫu hoặc thông tin phụ thuộc.");
-        setFieldForm(null); // Clear form data on error
+        setFieldForm(null);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchData();
-    // Dependency array: re-run effect if selectedId or id from URL changes
-  }, [selectedId, id]);
+  }, [selectedId, id, currentDependencyIndex]);
+  
+  
 
-  // --- Loading and Error States ---
+  useEffect(() => {
+    if (fieldForm && fieldForm.field_form && !isEdit) {
+      const initialState = {};
+      fieldForm.field_form.forEach(field => {
+        initialState[field.id] = field.data_type === "checkbox" ? [] : "";
+      });
+      setFormState(initialState);
+    }
+  }, [fieldForm, isEdit]);
+  
+
+  const handleChange = (id, value, isCheckbox = false) => {
+    setFormState((prev) => {
+      if (isCheckbox) {
+        const current = prev[id] || [];
+        const updated = current.includes(value)
+          ? current.filter((v) => v !== value)
+          : [...current, value];
+        return { ...prev, [id]: updated };
+      } else {
+        return { ...prev, [id]: value };
+      }
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    if (!verifiedStudentId) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi xác thực',
+        text: 'Không tìm thấy Mã số sinh viên. Vui lòng quay lại trang chính để xác thực.',
+        confirmButtonText: 'Đã hiểu',
+        customClass: { confirmButton: 'swal-button-custom-error' },
+        buttonsStyling: false,
+      });
+      return;
+    }
+  
+    if (!currentFormId) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Thiếu ID biểu mẫu',
+        text: 'Không xác định được biểu mẫu để gửi. Vui lòng tải lại trang hoặc thử lại.',
+      });
+      return;
+    }
+  
+    const valuesToSubmit = { ...formState };
+    console.log("Submitting form:", {
+      student_code: verifiedStudentId,
+      values: valuesToSubmit
+    });
+    console.log("currentFormId", currentFormId);
+    
+    try {
+      await axios.post(`${API_BASE_URL}/submit-form/${currentFormId}`, {
+        student_code: verifiedStudentId,
+        values: valuesToSubmit,
+      });
+  
+      Swal.fire({
+        title: 'Gửi thành công!',
+        html: notification || 'Biểu mẫu của bạn đã được nộp thành công.',
+        icon: notification ? 'info' : 'success',
+        confirmButtonText: 'Hoàn tất',
+        customClass: { confirmButton: 'swal-button-custom-confirm py-2 px-3 hover:text-white' },
+        buttonsStyling: false,
+      }).then(() => {
+        console.log("dependencies", dependencies);
+        console.log("currentDependencyIndex", currentDependencyIndex);
+        setNotification(null);
+        if (dependencies.length > 0 && currentDependencyIndex < dependencies.length) {
+          setCurrentDependencyIndex(prev => prev + 1);
+        } else {
+          navigate('/');
+        }
+      });
+  
+    } catch (error) {
+      console.error('Lỗi khi nộp biểu mẫu:', error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        'Đã xảy ra lỗi khi nộp biểu mẫu. Vui lòng thử lại.';
+  
+      Swal.fire({
+        icon: 'error',
+        title: 'Thất bại!',
+        text: errorMessage,
+        confirmButtonText: 'Đóng',
+        customClass: { confirmButton: 'swal-button-custom-error' },
+        buttonsStyling: false,
+      });
+    }
+  };
+  
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-center bg-white rounded-2xl shadow-lg p-8">
@@ -83,133 +223,16 @@ export default function FormDetailStudent({ selectedId }) {
     );
   }
 
-  /**
-   * Handles changes for all input types (text, number, textarea, date, radio, checkbox, select).
-   * @param {string} id - The ID of the form field.
-   * @param {*} value - The new value of the field.
-   * @param {boolean} [isCheckbox=false] - True if the field is a checkbox, for special handling.
-   */
-  const handleChange = (id, value, isCheckbox = false) => {
-    setFormState((prev) => {
-      if (isCheckbox) {
-        // For checkboxes, toggle values in an array
-        const current = prev[id] || [];
-        const updated = current.includes(value)
-          ? current.filter((v) => v !== value)
-          : [...current, value];
-        return { ...prev, [id]: updated };
-      } else {
-        // For other inputs, directly set the value
-        return { ...prev, [id]: value };
-      }
-    });
-  };
-
-  /**
-   * Handles the form submission.
-   * Converts date formats if needed and sends data to the backend.
-   */
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!verifiedStudentId) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Lỗi xác thực',
-        text: 'Không tìm thấy Mã số sinh viên. Vui lòng quay lại trang chính để xác thực.',
-        confirmButtonText: 'Đã hiểu',
-        customClass: {
-          confirmButton: 'swal-button-custom-error',
-        },
-        buttonsStyling: false,
-      });
-      return;
-    }
-
-    const valuesToSubmit = { ...formState };
-
-    // --- Date Format Conversion (if your backend requires it) ---
-    // The HTML input type="date" outputs YYYY-MM-DD.
-    // If your backend expects a different format (e.g., DD/MM/YYYY or an ISO string with timezone),
-    // you need to convert it here.
-    fieldForm.field_form.forEach(field => {
-        if (field.data_type === 'date' && valuesToSubmit[field.id]) {
-            // Example: If backend needs ISO string (YYYY-MM-DDTHH:mm:ss.sssZ)
-            // This is generally a good default for APIs.
-            // new Date(YYYY-MM-DD) creates a date object at midnight UTC for that date.
-            // valuesToSubmit[field.id] = new Date(valuesToSubmit[field.id]).toISOString();
-
-            // Uncomment the block below if your backend specifically needs DD/MM/YYYY
-            /*
-            const [year, month, day] = valuesToSubmit[field.id].split('-');
-            valuesToSubmit[field.id] = `${day}/${month}/${year}`;
-            */
-        }
-    });
-    // --- End Date Format Conversion ---
-
-
-    try {
-      console.log(valuesToSubmit);
-      await axios.post(
-        `${API_BASE_URL}/submit-form/${selectedId}`,
-        {
-          student_code: verifiedStudentId,
-          values: valuesToSubmit, // Use the potentially converted values
-        }
-      );
-      
-      
-
-      let swalTitle = 'Gửi thành công!';
-      let swalText = 'Biểu mẫu của bạn đã được nộp thành công.';
-      let swalIcon = 'success';
-
-      if (notification) {
-        swalText = notification; // Use dependency notification as the text if it exists
-        swalIcon = 'info';
-      }
-
-      Swal.fire({
-        title: swalTitle,
-        html: swalText,
-        icon: swalIcon,
-        confirmButtonText: 'Hoàn tất',
-        customClass: {
-          confirmButton: 'swal-button-custom-confirm py-2 px-3 hover:text-white',
-        },
-        buttonsStyling: false,
-      }).then(() => {
-        navigate('/'); // Navigate back to the home/main application form page
-      });
-
-    } catch (error) {
-      console.error('Lỗi khi nộp biểu mẫu:', error);
-      let errorMessage = 'Đã xảy ra lỗi khi nộp biểu mẫu. Vui lòng thử lại.';
-      if (error.response && error.response.data && error.response.data.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.message) {
-        errorMessage = `Lỗi mạng hoặc server: ${error.message}`;
-      }
-
-      Swal.fire({
-        icon: 'error',
-        title: 'Thất bại!',
-        text: errorMessage,
-        confirmButtonText: 'Đóng',
-        customClass: {
-          confirmButton: 'swal-button-custom-error',
-        },
-        buttonsStyling: false,
-      });
-    }
-  };
-
   return (
     <div className="min-h-screen pt-[72px] bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col items-center px-4 py-12">
       <div className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl p-10 border border-gray-100">
         <h2 className="text-4xl font-bold text-center text-indigo-700 mb-10">
           {fieldForm.name}
+          {dependencies.length > 0 && (
+            <span className="text-lg block mt-2 text-indigo-500">
+              Biểu mẫu {currentDependencyIndex + 1} / {dependencies.length + 1}
+            </span>
+          )}
         </h2>
 
         {notification && (
@@ -222,12 +245,15 @@ export default function FormDetailStudent({ selectedId }) {
           </div>
         )}
 
+        {/* Form render ở đây như trước đây */}
+        {/* Đã xử lý đầy đủ ở trên nên phần UI có thể được gộp lại sau */}
+
         <form onSubmit={handleSubmit} className="space-y-8">
           {fieldForm.field_form
             .sort((a, b) => a.order - b.order) // Ensure fields are displayed in order
             .map((field) => (
               <div key={field.id}
-                   className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm
+                className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm
                               hover:shadow-md hover:border-indigo-300 transition-all duration-300 ease-in-out">
                 <div className="space-y-2">
                   {/* Label */}
@@ -302,7 +328,7 @@ export default function FormDetailStudent({ selectedId }) {
                             type="radio"
                             name={`field-${field.id}`} // Use name for radio group
                             value={opt}
-                            checked={formState[field.id] === opt}
+                            checked={formState[field.id] == opt}
                             onChange={() => handleChange(field.id, opt)}
                             required={field.is_required}
                           />
@@ -352,7 +378,7 @@ export default function FormDetailStudent({ selectedId }) {
                       </select>
                       {/* Custom dropdown arrow icon */}
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 6.757 7.586 5.343 9z"/></svg>
+                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 6.757 7.586 5.343 9z" /></svg>
                       </div>
                     </div>
                   )}

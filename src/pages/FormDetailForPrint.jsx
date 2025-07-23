@@ -4,9 +4,10 @@ import axios from 'axios'; // Import axios
 import { XMarkIcon } from '@heroicons/react/20/solid'; // Import icon đóng modal
 import { CheckCircleIcon, ExclamationCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'; // Icons cho toast
 import { API_BASE_URL } from '../service/BaseUrl';
+import FormDetailStudent from './Student/FormDetailStudent';
 
 function FormDetailForPrint() {
-  const { mssv, id: folderId ,date } = useParams();
+  const { mssv, id: folderId, date } = useParams();
   const [forms, setForms] = useState([]);
   const [studentName, setStudentName] = useState('');
   const [notes, setNotes] = useState('');
@@ -16,6 +17,10 @@ function FormDetailForPrint() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('info'); // 'success', 'error', 'info', 'warning'
+
+  const [modal, setModal] = useState(false);
+    const [formId, setFormId] = useState(null);
+    const [valueId, setValueId] = useState(null);
 
   // Hàm hiển thị toast notification tùy chỉnh
   const showCustomToast = (message, type = 'info') => {
@@ -34,7 +39,7 @@ function FormDetailForPrint() {
       try {
         const res = await axios.get(`${API_BASE_URL}/form-values/${mssv}/${folderId}/${date}`);
         const data = res.data; // axios trả về data trong thuộc tính .data
-
+        console.log("data", data);
         setForms(data || []);
 
         // Lấy tên sinh viên từ value "mssv" nếu có
@@ -158,6 +163,9 @@ function FormDetailForPrint() {
                         <td className="px-6 py-4 text-center">{form.form_type?.name}</td>
                         <td className="px-6 py-4 text-center">{createdDate}</td>
                         <td className="px-6 py-4 text-center">
+                          <button onClick={() => { setModal(true); setFormId(form.type_of_form_id); setValueId(form.id); }} className="bg-blue-600 text-white px-4 py-2 mr-2 rounded-md">
+                            Sửa thông tin
+                          </button>
                           <button
                             onClick={() => handlePrintForm(form.id)} // Gọi hàm xử lý API
                             className={`bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition duration-200 ease-in-out ${isLoadingPrint ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -200,6 +208,22 @@ function FormDetailForPrint() {
           </Link>
         </div>
       </div>
+      {/* click ra ngoài thì tắt modal, nhưng nếu click vào form thì không tắt modal */}  
+      {modal && (
+                <div onClick={(event) => {
+                    if (event.target.classList.contains('bg-black', 'bg-opacity-50')) {
+                        setModal(false);
+                    }
+                }} className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-white w-full max-w-3xl h-[80vh] overflow-y-auto p-8 mt-10 rounded-lg shadow-lg">
+                  
+                        <div>
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Sửa thông tin đơn</h2>
+                            <FormDetailStudent  selectedId={formId} isEdit={true} valueID={valueId}></FormDetailStudent>
+                        </div>
+                    </div>
+                </div>
+            )}
     </div>
   );
 }
