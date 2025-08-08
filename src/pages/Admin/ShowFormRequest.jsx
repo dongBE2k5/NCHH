@@ -27,6 +27,7 @@ const StatusBadge = ({ status }) => {
     );
 };
 
+
 // Component chính của trang quản lý, đổi tên thành ShowFormRequest
 function ShowFormRequest() {
     const [forms, setForms] = useState([]);
@@ -43,7 +44,7 @@ function ShowFormRequest() {
                 // Sử dụng FormRequestService để lấy dữ liệu
                 const response = await FormRequestService.fetchData();
                 // SỬA LỖI: Đảm bảo setForms luôn nhận một mảng, ngay cả khi response.data là undefined
-                setForms(response|| []);
+                setForms(response || []);
 
             } catch (err) {
                 setError('Không thể tải dữ liệu. Vui lòng thử lại.');
@@ -55,7 +56,7 @@ function ShowFormRequest() {
         fetchForms();
     }, []);
     console.log(forms);
-    
+
     const filteredForms = useMemo(() => {
         // Lỗi xảy ra ở đây nếu `forms` là undefined. Việc khởi tạo useState([]) đã xử lý lần render đầu tiên.
         // Lỗi chỉ xảy ra nếu `setForms` được gọi với một giá trị không phải mảng.
@@ -87,11 +88,12 @@ function ShowFormRequest() {
         return <div className="p-8 text-center text-red-500">{error}</div>;
     }
 
+
     return (
         <div className="p-4 sm:p-6 lg:p-8 bg-slate-50 min-h-screen">
             <div className="max-w-7xl mx-auto">
                 <h1 className="text-3xl font-bold text-slate-800 mb-6">Quản lý Đơn từ</h1>
-                
+
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
                     {/* Thanh công cụ: Tìm kiếm */}
                     <div className="mb-4">
@@ -119,6 +121,7 @@ function ShowFormRequest() {
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tên Đơn</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Thư mục</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">MSSV</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Ngày gửi</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tài liệu</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Trạng thái</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Hành động</th>
@@ -131,19 +134,29 @@ function ShowFormRequest() {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{form.form_type?.name || 'N/A'}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{form.form_type?.folder?.name || 'N/A'}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{form.values?.[0]?.student_code || 'N/A'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">  {new Date(form.created_at).toLocaleString("vi-VN", {
+                                            timeZone: "Asia/Ho_Chi_Minh",
+                                            day: "2-digit",
+                                            month: "2-digit",
+                                            year: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                            second: "2-digit"
+                                        })}
+                                        </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                                             <div className="flex flex-col gap-2">
-                                                {form.url_docx && <a href={form.url_docx} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:underline"><LinkIcon className="h-4 w-4"/> URL</a>}
-                                                {form.file_docx && <a href={`/path/to/files/${form.file_docx}`} download className="inline-flex items-center gap-1 text-blue-600 hover:underline"><DocumentArrowDownIcon className="h-4 w-4"/> File</a>}
+                                                {form.url_docx && <a href={form.url_docx} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:underline"><LinkIcon className="h-4 w-4" /> URL</a>}
+                                                {form.file_docx && <a href={`/path/to/files/${form.file_docx}`} download className="inline-flex items-center gap-1 text-blue-600 hover:underline"><DocumentArrowDownIcon className="h-4 w-4" /> File</a>}
                                                 {!form.url_docx && !form.file_docx && <span>Không có</span>}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm"><StatusBadge status={form.status} /></td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div className="flex items-center gap-3">
-                                                <button className="text-blue-600 hover:text-blue-900" title="Xem"><EyeIcon className="h-5 w-5"/></button>
-                                                <button className="text-slate-600 hover:text-slate-900" title="Sửa"><PencilIcon className="h-5 w-5"/></button>
-                                                <button className="text-red-600 hover:text-red-900" title="Xóa"><TrashIcon className="h-5 w-5"/></button>
+                                                <button className="text-blue-600 hover:text-blue-900" title="Xem"><EyeIcon className="h-5 w-5" /></button>
+                                                <button className="text-slate-600 hover:text-slate-900" title="Sửa"><PencilIcon className="h-5 w-5" /></button>
+                                                <button className="text-red-600 hover:text-red-900" title="Xóa"><TrashIcon className="h-5 w-5" /></button>
                                             </div>
                                         </td>
                                     </tr>
@@ -163,11 +176,11 @@ function ShowFormRequest() {
                             </span>
                             <div className="flex items-center gap-2">
                                 <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} className="p-2 rounded-md hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">
-                                    <ChevronLeftIcon className="h-5 w-5"/>
+                                    <ChevronLeftIcon className="h-5 w-5" />
                                 </button>
                                 <span className="text-sm font-medium">{currentPage} / {totalPages}</span>
                                 <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 rounded-md hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">
-                                    <ChevronRightIcon className="h-5 w-5"/>
+                                    <ChevronRightIcon className="h-5 w-5" />
                                 </button>
                             </div>
                         </div>

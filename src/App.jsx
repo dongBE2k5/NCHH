@@ -1,29 +1,19 @@
 
 import { Routes, Route, useParams } from "react-router-dom";
 import Login from "./pages/Login";
-import StudentDashboard from "./pages/StudentDashboard";
-import StudentProfile from "./pages/StudentProfile";
+
+
 import FormList from "./pages/FormList";
 import FormSubmit from "./pages/FormSubmit";
-import FormStatus from "./pages/FormStatus";
-import StaffDashboard from "./pages/StaffDashboard";
-import SearchStudent from "./pages/SearchStudent";
-import ManageForms from "./pages/ManageForms";
-import Notifications from "./pages/Notifications";
-
 import { useState } from 'react';
-
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import './App.css'
-import DraggableItem from "./pages/DraggableItem";
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import CrudTest from "./pages/CrudTest";
+
 import DraggableCanvas from "./components/layout/DraggableCanvas";
 import Template from "./components/layout/Template";
-import ExportToWord from "./components/layout/ExportToWord ";
-import MyDocument from "./components/layout/MyDocument";
-import Call from "./components/layout/Call";
+
+
 
 import SubmitApplication from "./components/layout/SubmitApplication";
 import ReceiveApplication from "./components/layout/ReceiveApplication";
@@ -39,11 +29,11 @@ import LayoutAdmin from "./components/LayoutAdmin";
 import FormManagement from "./pages/Admin/FormManagement";
 import FormRequest from "./pages/FormRequest";
 import DocxEditor from "./components/DocxEditor";
-import OnlyOfficeViewer from './components/OnlyOfficeViewer';
+
 import GenerateDocxPage from "./components/GenerateDocxPage";
 import UploadTemplate from "./components/UploadTemplate";
 import ApplicationStatusPage from "./components/ApplicationStatusPage";
-import WordViewer from "./components/WordViewer";
+
 import ApplicationFormPage from "./pages/ApplicationFormPage";
 import ScrapedContentDisplay from "./pages/ScrapedContentDisplay";
 import PrintableApplicationForm from "./components/PrintableApplicationForm";
@@ -53,13 +43,15 @@ import DocxViewer from "./pages/DocxViewer";
 import FormLayoutDesigner from "./pages/Admin/FormLayoutDesigner";
 import DashboardAdmin from "./pages/Admin/DashboardAdmin";
 import Settings from "./pages/Admin/Settings";
-import RequireAuth from "./pages/Admin/RequireAuth";
+
 import Layout from "./pages/Admin/Layout";
 import StudentManagementPage from "./pages/Admin/StudentManagementPage";
 import DocumentViewerPage from "./pages/Student/DocumentViewerPage";
 import EditFormPage from "./pages/Admin/EditFormPage";
 import ShowFormPage from "./pages/Student/ShowFormPage";
 import ShowFormRequest from "./pages/Admin/ShowFormRequest";
+import FormDetailForDownload from "./pages/FormDetailForDownload";
+// import AccountManagement from "./pages/Admin/AccountManagement";
 
 
 
@@ -85,24 +77,18 @@ function App() {
           <Route path="forms/:id" element={<FormDetailStudent />} />
           <Route path="forms/:formID/preview-form/:id" element={<PreviewForm />} />
           <Route path="form/submit/:type" element={<FormSubmit />} />
+
+          <Route path="/search" element={<FormSearch />} />
+          <Route path="/show-form" element={<FormSearch />} />
+          <Route path="/print-form-detail/:mssv/:id/:date" element={<FormDetailForPrint />} />
+          <Route path="/download-form-detail/:mssv/:id/:date" element={<FormDetailForDownload />} />
           {/* Bạn có hai route "/forms" và "/form", có thể cân nhắc gộp lại nếu cùng mục đích */}
           <Route path="form" element={<FormListStudent />} />
           <Route path="gui" element={<SubmitApplication />} />
           <Route path="nhan" element={<ReceiveApplication />} />
         </Route>
 
-        {/* --- Authentication Routes --- */}
-
-
-        {/* --- Student Routes (consider nested routes for dashboard for better structure) --- */}
-        <Route path="/dashboard" element={<StudentDashboard />} />
-        <Route path="/profile" element={<StudentProfile />} />
-
-        {/* --- Staff Routes (consider nested routes for dashboard) --- */}
-        <Route path="/staff-dashboard" element={<StaffDashboard />} />
-
-
-        {/* Route giả lập cho trang in từng loại đơn */}
+    
         <Route path="/print-template/:type/:id" element={
           <div className="p-10 text-center text-2xl font-bold">
             Đây là trang in cho đơn <span className="text-blue-600">ID: {useParams().id}</span>, loại <span className="text-blue-600">{useParams().type}</span>.
@@ -110,12 +96,7 @@ function App() {
           </div>
         } />
 
-        <Route path="/manage-forms" element={<ManageForms />} />
-        <Route path="/notifications" element={<Notifications />} />
 
-
-        <Route path="/search" element={<FormSearch />} />
-        <Route path="/print-form-detail/:mssv/:id/:date" element={<FormDetailForPrint />} />
 
 
         <Route path="/login" element={<Login />} />
@@ -134,13 +115,9 @@ function App() {
           <Route path="layout/:id" element={<Layout />} />
           <Route path="editlayout/:formId" element={<EditFormPage />} />
           <Route path="form-request" element={<FormRequest />} />
+          {/* <Route path="account" element={<AccountManagement />} /> */}
           <Route path="settings" element={<Settings />} />
-
         </Route>
-
-
-
-        <Route path="/crud" element={<CrudTest />} />
         <Route path="/canvas" element={<DraggableCanvas />} />
         <Route path="/template" element={<Template />} />
         <Route path="/tests" element={<DocxEditor />} />

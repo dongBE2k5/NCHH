@@ -1,3 +1,4 @@
+// FormSearch.jsx (giữ nguyên như bạn đã cung cấp)
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -9,34 +10,27 @@ import {
     ArrowRightIcon,
     CalendarDaysIcon,
     ExclamationTriangleIcon,
-    FolderIcon, // Thêm icon thư mục
+    FolderIcon,
 } from "@heroicons/react/24/solid";
 
-// Component con để hiển thị một mục biểu mẫu trên dòng thời gian
-const TimelineItem = ({ item, handleViewDetail }) => (
+// Component con để hiển thị một mục biểu mẫu trên dòng thời gian (đã loại bỏ nút "Xem chi tiết")
+const TimelineItem = ({ item }) => (
     <motion.div
         layout
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="relative pl-12" // Tăng padding để có không gian cho icon
+        className="relative pl-12"
     >
         {/* Dấu chấm trên dòng thời gian */}
         <div className="absolute left-3 top-1 h-4 w-4 bg-blue-500 rounded-full border-4 border-slate-100"></div>
-        <div className="p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
+        <div className="p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
             <p className="font-bold text-slate-800">{item.formName}</p>
             <div className="flex items-center gap-x-4 gap-y-1 flex-wrap text-sm text-slate-500 mt-2">
                 <span><span className="font-medium">ID:</span> {item.id}</span>
                 <span><span className="font-medium">MSSV:</span> {item.studentCode}</span>
             </div>
-            <button
-                onClick={() => handleViewDetail(item.studentCode, item.formRequestId, item.date)}
-                className="mt-3 inline-flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ease-in-out"
-            >
-                Xem chi tiết
-                <ArrowRightIcon className="h-3 w-3" />
-            </button>
         </div>
     </motion.div>
 );
@@ -78,7 +72,7 @@ function FormSearch() {
                         forms: []
                     };
                 }
-                acc[dateKey].forms.push(form); // Đẩy toàn bộ object form vào
+                acc[dateKey].forms.push(form);
                 return acc;
             }, {});
 
@@ -146,7 +140,7 @@ function FormSearch() {
             return;
         }
         const formattedDate = convertDateFormat(date);
-        navigate(`/print-form-detail/${studentCode}/${formRequestId}/${formattedDate}`);
+        navigate(`/download-form-detail/${studentCode}/${formRequestId}/${formattedDate}`);
     };
     
     // Hàm render dòng thời gian đã được nâng cấp
@@ -160,28 +154,39 @@ function FormSearch() {
                         {/* Tiêu đề ngày */}
                         <div className="relative pl-12 mb-6">
                              <div className="absolute left-2 top-0 h-6 w-6 bg-slate-100 rounded-full flex items-center justify-center ring-4 ring-slate-50">
-                                <CalendarDaysIcon className="h-4 w-4 text-slate-500" />
+                                  <CalendarDaysIcon className="h-4 w-4 text-slate-500" />
                              </div>
                             <h3 className="font-bold text-xl text-slate-800 pt-0.5">{group.date}</h3>
                         </div>
 
                         {/* Nhóm theo thư mục */}
                         <div className="space-y-6">
-                            {/* SỬA LỖI: Thêm kiểm tra group.folders tồn tại trước khi map */}
                             {group.folders && group.folders.map(folder => (
                                 <div key={folder.folderId}>
-                                    {/* Tiêu đề thư mục */}
+                                    {/* Tiêu đề thư mục và nút Xem chi tiết */}
                                     <div className="relative pl-12 mb-4">
                                         <div className="absolute left-3 top-1 h-4 w-4 bg-slate-400 rounded-full border-4 border-slate-100"></div>
-                                        <div className="flex items-center gap-2">
-                                            <FolderIcon className="h-5 w-5 text-slate-500" />
-                                            <h4 className="font-semibold text-md text-slate-600">{folder.folderName}</h4>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <FolderIcon className="h-5 w-5 text-slate-500" />
+                                                <h4 className="font-semibold text-md text-slate-600">{folder.folderName}</h4>
+                                            </div>
+                                            {/* Nút "Xem chi tiết" được chuyển lên cấp độ thư mục */}
+                                            {folder.forms && folder.forms.length > 0 && (
+                                                <button
+                                                    onClick={() => handleViewDetail(folder.forms[0].studentCode, folder.forms[0].formRequestId, folder.forms[0].date)}
+                                                    className="inline-flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ease-in-out"
+                                                >
+                                                    Xem chi tiết
+                                                    <ArrowRightIcon className="h-3 w-3" />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                     {/* Danh sách các form trong thư mục */}
                                     <div className="space-y-4">
                                         {folder.forms.map(item => (
-                                            <TimelineItem key={item.id} item={item} handleViewDetail={handleViewDetail} />
+                                            <TimelineItem key={item.id} item={item} />
                                         ))}
                                     </div>
                                 </div>
@@ -194,8 +199,8 @@ function FormSearch() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-100 font-sans p-4 sm:p-6 lg:p-8">
-            <div className="max-w-3xl mx-auto">
+        <div className="font-sans min-h-screen bg-gray-50">
+            <div className="container mx-auto px-52 py-10">
                 <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg border border-slate-200">
                     <div className="text-center">
                         <DocumentTextIcon className="h-12 w-12 mx-auto text-blue-600" />
@@ -228,7 +233,7 @@ function FormSearch() {
                                     </svg>
                                     <span>Đang tìm...</span>
                                 </>
-                            ) : ( "Tìm kiếm" )}
+                            ) : "Tìm kiếm"}
                         </button>
                     </form>
 

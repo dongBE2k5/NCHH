@@ -115,7 +115,7 @@ function Table({ headers, data, selectable, selectedItems, onSelectItem, onSelec
               </td>
               <td className="px-6 py-4 text-sm text-center flex flex-col sm:flex-row items-center justify-center gap-2">
                 <select
-                  className="p-2 border border-gray-500 rounded-md bg-white text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm w-full sm:w-auto"
+                  className="p-2 border border-gray-500 rounded-md bg-white text-base focus:ring-blue-500 focus:border-blue-500 shadow-sm w-full sm:w-auto text-black"
                   onChange={(e) => handleActionChange(e, item)}
                   defaultValue=""
                 >

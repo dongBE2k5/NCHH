@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+
 import axios from 'axios'; // Import axios
 import { XMarkIcon } from '@heroicons/react/20/solid'; // Import icon đóng modal
 import { CheckCircleIcon, ExclamationCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'; // Icons cho toast
 import { API_BASE_URL } from '../service/BaseUrl';
 import FormDetailStudent from './Student/FormDetailStudent';
+import FormRequestService from '../service/FormRequestService';
 
 function FormDetailForPrint() {
   const { mssv, id: folderId, date } = useParams();
   const [forms, setForms] = useState([]);
   const [studentName, setStudentName] = useState('');
   const [notes, setNotes] = useState('');
-  const [isLoadingPrint, setIsLoadingPrint] = useState(false); // State cho loading của nút in
+  const [isLoadingPrint, setIsLoadingPrint] = useState(false);
 
   // === State cho Custom Toast Notification ===
   const [showToast, setShowToast] = useState(false);
@@ -37,18 +39,17 @@ function FormDetailForPrint() {
   useEffect(() => {
     const fetchFormsInFolder = async () => {
       try {
+
         const res = await axios.get(`${API_BASE_URL}/form-values/${mssv}/${folderId}/${date}`);
         const data = res.data; // axios trả về data trong thuộc tính .data
         console.log("data", data);
+
         setForms(data || []);
 
-        // Lấy tên sinh viên từ value "mssv" nếu có
-        // Cần kiểm tra cấu trúc dữ liệu trả về từ API /form-value-folder
-        // Giả sử API trả về một mảng các form_request, mỗi form_request có student_name và student_code
         if (data && data.length > 0) {
-          setStudentName(data[0].student_name ?? mssv); // Lấy tên sinh viên từ form đầu tiên
+          setStudentName(data[0].student_name ?? mssv);
         } else {
-          setStudentName(mssv); // Nếu không có data, dùng mssv
+          setStudentName(mssv);
         }
 
         setNotes(`Ghi chú về sinh viên ${mssv} (demo).`);
@@ -59,26 +60,47 @@ function FormDetailForPrint() {
     };
 
     fetchFormsInFolder();
-  }, [mssv, folderId]);
+  }, [mssv, folderId, date]);
 
-  // Hàm xử lý khi nhấn nút "In Đơn"
+  // Hàm xử lý khi nhấn nút "In Đơn" (ĐÃ SỬA LỖI MỞ TAB)
   const handlePrintForm = async (formRequestId) => {
-    setIsLoadingPrint(true); // Bắt đầu loading
-    showCustomToast("Đang tạo và tải file lên Google Drive...", "info");
+    setIsLoadingPrint(true);
+    showCustomToast("Đang chuẩn bị file...", "info");
+
+    // Bước 1: Mở tab mới ngay lập tức khi người dùng nhấn nút.
+    const newWindow = window.open('', '_blank');
+    if (newWindow) {
+        // Hiển thị thông báo chờ trong tab mới
+        newWindow.document.write('<div style="font-family: sans-serif; text-align: center; padding-top: 50px;"><h1>Đang tạo file, vui lòng đợi...</h1><p>Quá trình này có thể mất vài giây. Vui lòng không đóng tab này.</p></div>');
+    } else {
+        // Xử lý trường hợp trình duyệt chặn pop-up
+        showCustomToast("Không thể mở tab mới. Vui lòng cho phép pop-up cho trang web này.", "error");
+        setIsLoadingPrint(false);
+        return;
+    }
 
     try {
-      const response = await axios.get(`${API_BASE_URL}/google-drive/generate-upload/${formRequestId}`);
-      const result = response.data;
 
+      const response = await axios.get(`${API_BASE_URL}/google-drive/generate-upload/${formRequestId}`);
+
+      // Bước 2: Gọi API để tạo file
+
+      const result = response.data;
+      
       if (result.success && result.url) {
-        showCustomToast("Tạo và upload file thành công! Đang mở file...", "success");
-        window.open(result.url, '_blank'); // Mở URL trong tab mới
+        showCustomToast("Tạo file thành công! Đang chuyển hướng...", "success");
+        // Bước 3: Chuyển hướng tab đã mở đến URL của file
+        newWindow.location.href = result.url;
       } else {
         showCustomToast(result.message || "Lỗi khi tạo và upload file lên Google Drive.", "error");
+        newWindow.document.write(`<div style="font-family: sans-serif; text-align: center; padding-top: 50px; color: red;"><h1>Lỗi</h1><p>${result.message || "Không thể tạo file."}</p><p>Bạn có thể đóng tab này.</p></div>`);
       }
     } catch (error) {
       console.error("Lỗi khi gọi API in/upload:", error);
       showCustomToast("Đã xảy ra lỗi khi in hoặc upload file. Vui lòng thử lại.", "error");
+       if(newWindow) {
+            newWindow.document.write('<div style="font-family: sans-serif; text-align: center; padding-top: 50px; color: red;"><h1>Đã xảy ra lỗi</h1><p>Không thể tạo file. Vui lòng thử lại hoặc liên hệ quản trị viên.</p><p>Bạn có thể đóng tab này.</p></div>');
+        }
     } finally {
       setIsLoadingPrint(false); // Kết thúc loading
     }
@@ -112,7 +134,6 @@ function FormDetailForPrint() {
   };
 
   const { bg: toastBgClass, icon: toastIcon } = getToastClasses(toastType);
-
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
@@ -167,9 +188,9 @@ function FormDetailForPrint() {
                             Sửa thông tin
                           </button>
                           <button
-                            onClick={() => handlePrintForm(form.id)} // Gọi hàm xử lý API
+                            onClick={() => handlePrintForm(form.id)}
                             className={`bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition duration-200 ease-in-out ${isLoadingPrint ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            disabled={isLoadingPrint} // Vô hiệu hóa nút khi đang loading
+                            disabled={isLoadingPrint}
                           >
                             {isLoadingPrint ? (
                               <svg className="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -201,10 +222,10 @@ function FormDetailForPrint() {
 
         <div className="mt-8 text-center">
           <Link
-            to="/search"
+            to="/admin/request" // Cập nhật link quay lại cho phù hợp
             className="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-md font-medium"
           >
-            Quay lại tìm kiếm
+            Quay lại
           </Link>
         </div>
       </div>

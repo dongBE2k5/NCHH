@@ -1,5 +1,3 @@
-// FormDetailStudent.jsx - Phiên bản đầy đủ đã cập nhật hỗ trợ xử lý form phụ thuộc
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from "axios";
@@ -18,12 +16,12 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
   const [dependencies, setDependencies] = useState([]);
   const [currentDependencyIndex, setCurrentDependencyIndex] = useState(0);
   const [currentFormId, setCurrentFormId] = useState(null);
+  const [isPreview, setIsPreview] = useState(false); // State mới để quản lý chế độ xem trước
 
   const { id } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
-
     if (isEdit) {
       fetchDataSubmit();
     }
@@ -47,7 +45,6 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
         console.log("valueData", valueData.values);
         console.log("converted", converted);
 
-
       } catch (error) {
         console.error("Lỗi khi tải dữ liệu:", error);
       }
@@ -56,15 +53,13 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
     const formToFetchId = currentDependencyIndex === 0
       ? (selectedId || id)
       : dependencies[currentDependencyIndex - 1]?.id;
-  
+
     if (!formToFetchId) {
       console.error("Không xác định được formToFetchId.");
       setNotification("Không tìm thấy ID biểu mẫu để hiển thị.");
       setLoading(false);
       return;
     }
-    
-
 
     const fetchData = async () => {
       setLoading(true);
@@ -73,12 +68,12 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
         const formResponse = await axios.get(`${API_BASE_URL}/forms/${formToFetchId}`);
         setFieldForm(formResponse.data);
         setCurrentFormId(formResponse.data?.id);
-  
+
         // 2. CHỈ gọi dependencies khi là form gốc (ban đầu)
         if (currentDependencyIndex === 0) {
           const dependenciesResponse = await axios.get(`${API_BASE_URL}/forms/${formToFetchId}/dependencies`);
           const dependenciesData = dependenciesResponse.data;
-        
+
           if (dependenciesData.dependencies?.length > 0) {
             setDependencies(dependenciesData.dependencies);
             const requiredForms = dependenciesData.dependencies.map(f => f.name).join(", ");
@@ -88,8 +83,7 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
             setNotification(null);
           }
         }
-        
-  
+
       } catch (error) {
         console.error("Lỗi khi tải form hoặc dependencies:", error);
         setNotification("Đã xảy ra lỗi khi tải biểu mẫu hoặc thông tin phụ thuộc.");
@@ -98,11 +92,9 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
         setLoading(false);
       }
     };
-  
+
     fetchData();
-  }, [selectedId, id, currentDependencyIndex]);
-  
-  
+  }, [selectedId, id, currentDependencyIndex, isEdit, valueID]); // Thêm isEdit và valueID vào dependencies
 
   useEffect(() => {
     if (fieldForm && fieldForm.field_form && !isEdit) {
@@ -113,9 +105,11 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
       setFormState(initialState);
     }
   }, [fieldForm, isEdit]);
-  
 
   const handleChange = (id, value, isCheckbox = false) => {
+    // Ngăn không cho chỉnh sửa nếu đang ở chế độ xem trước
+    if (isPreview) return;
+
     setFormState((prev) => {
       if (isCheckbox) {
         const current = prev[id] || [];
@@ -129,9 +123,13 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleInitialSubmit = (e) => {
     e.preventDefault();
-  
+    // Khi người dùng nhấn nút "Gửi Biểu Mẫu" lần đầu, chuyển sang chế độ xem trước
+    setIsPreview(true);
+  };
+
+  const handleConfirmSubmit = async () => {
     if (!verifiedStudentId) {
       Swal.fire({
         icon: 'error',
@@ -143,7 +141,7 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
       });
       return;
     }
-  
+
     if (!currentFormId) {
       Swal.fire({
         icon: 'error',
@@ -152,20 +150,20 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
       });
       return;
     }
-  
+
     const valuesToSubmit = { ...formState };
     console.log("Submitting form:", {
       student_code: verifiedStudentId,
       values: valuesToSubmit
     });
     console.log("currentFormId", currentFormId);
-    
+
     try {
       await axios.post(`${API_BASE_URL}/submit-form/${currentFormId}`, {
         student_code: verifiedStudentId,
         values: valuesToSubmit,
       });
-  
+
       Swal.fire({
         title: 'Gửi thành công!',
         html: notification || 'Biểu mẫu của bạn đã được nộp thành công.',
@@ -174,8 +172,7 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
         customClass: { confirmButton: 'swal-button-custom-confirm py-2 px-3 hover:text-white' },
         buttonsStyling: false,
       }).then(() => {
-        console.log("dependencies", dependencies);
-        console.log("currentDependencyIndex", currentDependencyIndex);
+        setIsPreview(false); // Reset chế độ xem trước sau khi gửi thành công
         setNotification(null);
         if (dependencies.length > 0 && currentDependencyIndex < dependencies.length) {
           setCurrentDependencyIndex(prev => prev + 1);
@@ -183,14 +180,14 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
           navigate('/');
         }
       });
-  
+
     } catch (error) {
       console.error('Lỗi khi nộp biểu mẫu:', error);
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
         'Đã xảy ra lỗi khi nộp biểu mẫu. Vui lòng thử lại.';
-  
+
       Swal.fire({
         icon: 'error',
         title: 'Thất bại!',
@@ -201,7 +198,10 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
       });
     }
   };
-  
+
+  const handleEditForm = () => {
+    setIsPreview(false); // Quay lại chế độ chỉnh sửa
+  };
 
   if (loading) {
     return (
@@ -245,35 +245,42 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
           </div>
         )}
 
-        {/* Form render ở đây như trước đây */}
-        {/* Đã xử lý đầy đủ ở trên nên phần UI có thể được gộp lại sau */}
+        {isPreview && (
+          <div className="mb-8 p-5 rounded-xl bg-yellow-50 border border-yellow-200 text-yellow-800 flex items-start space-x-4 shadow-sm">
+            <InformationCircleIcon className="h-7 w-7 text-yellow-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-lg mb-1">Kiểm tra thông tin</p>
+              <p className="text-base leading-relaxed">Vui lòng kiểm tra lại các thông tin bạn đã điền. Nếu mọi thứ đã chính xác, hãy nhấn "Xác nhận gửi". Nếu cần chỉnh sửa, nhấn "Quay lại chỉnh sửa".</p>
+            </div>
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleInitialSubmit} className="space-y-8">
           {fieldForm.field_form
-            .sort((a, b) => a.order - b.order) // Ensure fields are displayed in order
+            .sort((a, b) => a.order - b.order)
             .map((field) => (
               <div key={field.id}
                 className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm
-                              hover:shadow-md hover:border-indigo-300 transition-all duration-300 ease-in-out">
+                                  hover:shadow-md hover:border-indigo-300 transition-all duration-300 ease-in-out">
                 <div className="space-y-2">
-                  {/* Label */}
                   <label htmlFor={`field-${field.id}`} className="block text-base text-start w-full font-medium text-gray-800 mb-1">
                     {field.label}
                     {field.is_required && <span className="text-red-500 ml-2 text-sm font-normal">(Bắt buộc)</span>}
                   </label>
 
-                  {/* Input Elements */}
                   {field.data_type === "text" && (
                     <input
                       id={`field-${field.id}`}
                       type="text"
                       className="w-full !max-w-full border border-gray-300 px-4 py-2.5 rounded-lg
-                                 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none
-                                 transition-all duration-300 text-gray-800 placeholder-gray-400 text-base"
+                                            focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none
+                                            transition-all duration-300 text-gray-800 placeholder-gray-400 text-base
+                                            read-only:bg-gray-50 read-only:border-gray-200 read-only:text-gray-600 read-only:cursor-not-allowed"
                       value={formState[field.id] || ""}
                       onChange={(e) => handleChange(field.id, e.target.value)}
                       required={field.is_required}
                       placeholder={`Nhập ${field.label.toLowerCase()}`}
+                      readOnly={isPreview} // Thêm thuộc tính readOnly
                     />
                   )}
 
@@ -282,12 +289,14 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
                       id={`field-${field.id}`}
                       type="number"
                       className="w-full !max-w-full border border-gray-300 px-4 py-2.5 rounded-lg
-                                 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none
-                                 transition-all duration-300 text-gray-800 placeholder-gray-400 text-base"
+                                            focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none
+                                            transition-all duration-300 text-gray-800 placeholder-gray-400 text-base
+                                            read-only:bg-gray-50 read-only:border-gray-200 read-only:text-gray-600 read-only:cursor-not-allowed"
                       value={formState[field.id] || ""}
                       onChange={(e) => handleChange(field.id, e.target.value)}
                       required={field.is_required}
                       placeholder={`Nhập ${field.label.toLowerCase()}`}
+                      readOnly={isPreview} // Thêm thuộc tính readOnly
                     />
                   )}
 
@@ -296,12 +305,14 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
                       id={`field-${field.id}`}
                       rows={5}
                       className="w-full !max-w-full border border-gray-300 px-4 py-2.5 rounded-lg
-                                 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none
-                                 transition-all duration-300 text-gray-800 placeholder-gray-400 text-base"
+                                            focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none
+                                            transition-all duration-300 text-gray-800 placeholder-gray-400 text-base
+                                            read-only:bg-gray-50 read-only:border-gray-200 read-only:text-gray-600 read-only:cursor-not-allowed"
                       value={formState[field.id] || ""}
                       onChange={(e) => handleChange(field.id, e.target.value)}
                       required={field.is_required}
                       placeholder={`Nhập thông tin chi tiết cho ${field.label.toLowerCase()}`}
+                      readOnly={isPreview} // Thêm thuộc tính readOnly
                     />
                   )}
 
@@ -310,27 +321,30 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
                       id={`field-${field.id}`}
                       type="date"
                       className="w-full !max-w-full border border-gray-300 px-4 py-2.5 rounded-lg
-                                 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none
-                                 transition-all duration-300 text-gray-800 text-base"
+                                            focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none
+                                            transition-all duration-300 text-gray-800 text-base
+                                            read-only:bg-gray-50 read-only:border-gray-200 read-only:text-gray-600 read-only:cursor-not-allowed"
                       value={formState[field.id] || ""}
                       onChange={(e) => handleChange(field.id, e.target.value)}
                       required={field.is_required}
+                      readOnly={isPreview} // Thêm thuộc tính readOnly
                     />
                   )}
 
                   {field.data_type === "radio" && (
                     <div className="flex flex-wrap gap-x-8 gap-y-4">
                       {field.options?.map((opt, idx) => (
-                        <label key={idx} htmlFor={`field-${field.id}-${idx}`} className="inline-flex items-center space-x-3 cursor-pointer text-gray-700 text-base hover:text-indigo-600 transition-colors duration-200">
+                        <label key={idx} htmlFor={`field-${field.id}-${idx}`} className={`inline-flex items-center space-x-3 text-base ${isPreview ? 'text-gray-600 cursor-not-allowed' : 'cursor-pointer text-gray-700 hover:text-indigo-600 transition-colors duration-200'}`}>
                           <input
                             id={`field-${field.id}-${idx}`}
-                            className="form-radio  h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 cursor-pointer transition-colors duration-200"
+                            className={`form-radio h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 transition-colors duration-200 ${isPreview ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                             type="radio"
-                            name={`field-${field.id}`} // Use name for radio group
+                            name={`field-${field.id}`}
                             value={opt}
                             checked={formState[field.id] == opt}
                             onChange={() => handleChange(field.id, opt)}
                             required={field.is_required}
+                            disabled={isPreview} // Thêm thuộc tính disabled
                           />
                           <span>{opt}</span>
                         </label>
@@ -341,16 +355,17 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
                   {field.data_type === "checkbox" && (
                     <div className="flex flex-col space-y-3">
                       {field.options?.map((opt, idx) => (
-                        <label key={idx} htmlFor={`field-${field.id}-${idx}`} className="inline-flex items-center space-x-3 cursor-pointer text-gray-700 text-base hover:text-indigo-600 transition-colors duration-200">
+                        <label key={idx} htmlFor={`field-${field.id}-${idx}`} className={`inline-flex items-center space-x-3 text-base ${isPreview ? 'text-gray-600 cursor-not-allowed' : 'cursor-pointer text-gray-700 hover:text-indigo-600 transition-colors duration-200'}`}>
                           <input
                             id={`field-${field.id}-${idx}`}
-                            className="form-checkbox h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer transition-colors duration-200"
+                            className={`form-checkbox h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 transition-colors duration-200 ${isPreview ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                             type="checkbox"
                             name={`field-${field.id}`}
                             value={opt}
                             checked={formState[field.id]?.includes(opt) || false}
                             onChange={() => handleChange(field.id, opt, true)}
-                            required={field.is_required && (!formState[field.id] || formState[field.id].length === 0)} // Basic required validation for checkboxes
+                            required={field.is_required && (!formState[field.id] || formState[field.id].length === 0)}
+                            disabled={isPreview} // Thêm thuộc tính disabled
                           />
                           <span>{opt}</span>
                         </label>
@@ -363,11 +378,13 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
                       <select
                         id={`field-${field.id}`}
                         className="w-full border border-gray-300 px-4 py-2.5 rounded-lg
-                                   focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none
-                                   transition-all duration-300 bg-white text-gray-800 text-base appearance-none pr-10"
+                                            focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none
+                                            transition-all duration-300 bg-white text-gray-800 text-base appearance-none pr-10
+                                            read-only:bg-gray-50 read-only:border-gray-200 read-only:text-gray-600 read-only:cursor-not-allowed"
                         value={formState[field.id] || ""}
                         onChange={(e) => handleChange(field.id, e.target.value)}
                         required={field.is_required}
+                        disabled={isPreview} // Thêm thuộc tính disabled
                       >
                         <option value="" disabled>-- Chọn một giá trị từ danh sách --</option>
                         {field.options?.map((opt, idx) => (
@@ -376,7 +393,6 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
                           </option>
                         ))}
                       </select>
-                      {/* Custom dropdown arrow icon */}
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                         <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 6.757 7.586 5.343 9z" /></svg>
                       </div>
@@ -386,12 +402,31 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
               </div>
             ))}
 
-          <button
-            type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xl font-bold py-3.5 rounded-xl shadow-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50"
-          >
-            Gửi Biểu Mẫu
-          </button>
+          {!isPreview ? (
+            <button
+              type="submit" // Type submit để kích hoạt handleInitialSubmit
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xl font-bold py-3.5 rounded-xl shadow-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50"
+            >
+              Xem trước và Gửi Biểu Mẫu
+            </button>
+          ) : (
+            <div className="flex justify-end gap-4 mt-8">
+              <button
+                type="button"
+                onClick={handleEditForm}
+                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 text-xl font-bold py-3.5 rounded-xl shadow-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-50"
+              >
+                Quay lại chỉnh sửa
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmSubmit}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-3.5 rounded-xl shadow-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-50"
+              >
+                Xác nhận và Gửi
+              </button>
+            </div>
+          )}
         </form>
       </div>
     </div>

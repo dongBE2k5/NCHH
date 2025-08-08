@@ -26,7 +26,18 @@ const FormRequestService = {
     const response = await axios.delete(`${API_URL}/${id}`);
     return response.data;
   },
-
+  getById:async (id) => {
+       const response = await axios.get(`${API_URL}/${id}`);
+    return response.data;
+  },
+  createdFile:async (id) => {
+     const response = await axios.get(`${API_URL}/${id}/created-file`);
+    return response.data;
+  },
+  getFile:async (filename) => {
+     const response = await axios.get(`${API_URL}/${filename}/get-file`);
+    return response.data;
+  }
 
 
 

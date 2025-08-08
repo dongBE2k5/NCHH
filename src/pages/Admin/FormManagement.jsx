@@ -1,14 +1,13 @@
-// FormManagement.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Swal from 'sweetalert2'; // Import SweetAlert2
+import Swal from 'sweetalert2';
 import FormTreeItem from './FormTreeItem';
 import FolderService from '../../service/FolderService';
 import FormTemplateService from '../../service/FormTemplateService';
-import NoteService from '../../service/NoteService';
+// Loại bỏ import NoteService: import NoteService from '../../service/NoteService';
 
-// Build tree from folders, forms, and notes
-const buildTree = (folders, forms, notes) => {
+// Build tree from folders and forms (forms can now have notes)
+const buildTree = (folders, forms) => { // Loại bỏ 'notes' khỏi tham số
   const map = new Map();
   const tree = [];
 
@@ -23,21 +22,15 @@ const buildTree = (folders, forms, notes) => {
   const formItems = forms.map(item => ({
     id: `form-${item.id}`,
     name: item.name,
-    type: 'form',
+    // Giả sử item.note là trường chứa nội dung ghi chú của form
+    note: item.note || '', // Đảm bảo note được bao gồm
+    type: 'form', // Tất cả giờ đều là 'form', không còn 'note' riêng
     parentId: item.parent_id ? item.parent_id : null,
     children: []
   }));
 
-  const noteItems = notes.map(item => ({
-    id: `note-${item.id}`,
-    name: item.name,
-    content: item.content, // Ensure content is included
-    type: 'note',
-    parentId: item.parent_id ? item.parent_id : null,
-    children: []
-  }));
-
-  const allItems = [...folderItems, ...formItems, ...noteItems];
+  // Ghép nối folderItems và formItems. Không còn noteItems riêng biệt.
+  const allItems = [...folderItems, ...formItems];
   allItems.forEach(item => map.set(item.id, item));
 
   allItems.forEach(item => {
@@ -50,8 +43,8 @@ const buildTree = (folders, forms, notes) => {
 
   const sortTree = (nodes) => {
     nodes.sort((a, b) => {
-      // Prioritize folders, then forms, then notes, then alphabetical by name
-      const typeOrder = { 'folder': 1, 'form': 2, 'note': 3 };
+      // Prioritize folders, then forms, then alphabetical by name
+      const typeOrder = { 'folder': 1, 'form': 2 }; // Loại bỏ 'note'
       if (typeOrder[a.type] !== typeOrder[b.type]) {
         return typeOrder[a.type] - typeOrder[b.type];
       }
@@ -68,7 +61,7 @@ const FormManagement = () => {
   const [treeData, setTreeData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [itemName, setItemName] = useState('');
-  const [itemContent, setItemContent] = useState(''); // State for note content
+  const [itemContent, setItemContent] = useState(''); // State for form note content
   const [message, setMessage] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentItemId, setCurrentItemId] = useState(null);
@@ -85,12 +78,12 @@ const FormManagement = () => {
 
   const fetchData = useCallback(async () => {
     try {
-      const [folders, forms, notes] = await Promise.all([
+      // Chỉ fetch folders và forms (forms giờ có thể chứa note)
+      const [folders, forms] = await Promise.all([
         FolderService.fetchForms(),
         FormTemplateService.fetchForms(),
-        NoteService.fetchNotes()
       ]);
-      const tree = buildTree(folders, forms, notes);
+      const tree = buildTree(folders, forms); // Truyền forms thay vì notes
       setTreeData(tree);
       showMessage('Tải dữ liệu thành công!', 'success');
     } catch (err) {
@@ -111,9 +104,8 @@ const FormManagement = () => {
         if (itemType === 'folder') {
           await FolderService.updateForm(currentItemId, itemName);
         } else if (itemType === 'form') {
-          await FormTemplateService.updateForm(currentItemId.replace('form-', ''), itemName);
-        } else if (itemType === 'note') {
-          await NoteService.updateNote(currentItemId.replace('note-', ''), itemName, itemContent);
+          // Cập nhật form, truyền cả note nếu có
+          await FormTemplateService.updateForm(currentItemId.replace('form-', ''), itemName, itemContent);
         }
         showMessage('Cập nhật thành công!', 'success');
       } else {
@@ -121,9 +113,8 @@ const FormManagement = () => {
         if (itemType === 'folder') {
           await FolderService.saveForm(itemName, parentFolderId, 1);
         } else if (itemType === 'form') {
-          await FormTemplateService.saveForm(itemName, parentFolderId);
-        } else if (itemType === 'note') {
-          await NoteService.saveNote(itemName, itemContent, parentFolderId); // Pass content for new note
+          // Tạo mới form, truyền cả note
+          await FormTemplateService.saveForm(itemName, parentFolderId, itemContent);
         }
         showMessage('Tạo mới thành công!', 'success');
       }
@@ -141,8 +132,6 @@ const FormManagement = () => {
         await FormTemplateService.deleteForm(id.replace('form-', ''));
       } else if (type === 'folder') {
         await FolderService.deleteForm(id);
-      } else if (type === 'note') {
-        await NoteService.deleteNote(id.replace('note-', ''));
       }
       showMessage(`Đã xoá "${name}" thành công`, 'success');
       fetchData();
@@ -180,11 +169,11 @@ const FormManagement = () => {
     setCurrentItemId(item.id);
     setItemType(item.type);
     setParentFolderId(item.parentId);
-    // Set content only if the item is a note
-    if (item.type === 'note') {
-      setItemContent(item.content || '');
+    // Set content if the item is a form and has a note
+    if (item.type === 'form') { // Kiểm tra nếu là 'form'
+      setItemContent(item.note || ''); // Lấy nội dung note từ item.note
     } else {
-      setItemContent(''); // Clear content if not a note
+      setItemContent(''); // Clear content if not a form
     }
     setParentFolderName('');
   };
@@ -193,12 +182,12 @@ const FormManagement = () => {
     navigator(`/admin/layout/${id.replace('form-', '')}`);
   };
 
-  // handleViewNote now displays content using Swal.fire
-  const handleViewNote = (noteName, noteContent) => {
+  // handleViewNote giờ thành handleViewFormNote
+  const handleViewFormNote = (formName, formNoteContent) => {
     Swal.fire({
-      title: noteName,
+      title: `Nội dung ghi chú của Biểu mẫu: ${formName}`,
       html: `<div style="text-align: left; max-height: 400px; overflow-y: auto; padding: 10px; border: 1px solid #eee; border-radius: 5px; background: #f9f9f9;">
-               <pre style="margin: 0; white-space: pre-wrap; word-break: break-word;">${noteContent || 'Không có nội dung.'}</pre>
+               <pre style="margin: 0; white-space: pre-wrap; word-break: break-word;">${formNoteContent || 'Không có nội dung ghi chú.'}</pre>
              </div>`,
       icon: 'info',
       confirmButtonText: 'Đóng',
@@ -244,7 +233,7 @@ const FormManagement = () => {
                 onDelete={handleDelete}
                 onAddChild={handleAddChild}
                 onLayout={handleLayout}
-                onViewNote={handleViewNote}
+                onViewNote={handleViewFormNote}
               />
             ))
           ) : (
@@ -256,7 +245,7 @@ const FormManagement = () => {
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
             <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
               <h2 className="text-2xl font-bold mb-6 text-gray-800">
-                {isEditMode ? `Chỉnh sửa ${itemType === 'folder' ? 'Thư mục' : itemType === 'form' ? 'Biểu mẫu' : 'Ghi chú'}` : `Tạo mới ${parentFolderName ? `trong ${parentFolderName}` : 'ở thư mục gốc'}`}
+                {isEditMode ? `Chỉnh sửa ${itemType === 'folder' ? 'Thư mục' : 'Biểu mẫu'}` : `Tạo mới ${parentFolderName ? `trong ${parentFolderName}` : 'ở thư mục gốc'}`}
               </h2>
 
               <form onSubmit={handleSubmitForm}>
@@ -274,11 +263,11 @@ const FormManagement = () => {
                   />
                 </div>
 
-                {/* Show content textarea only for notes, in both edit and create modes */}
-                {(itemType === 'note') && (
+                {/* Show content textarea only if the itemType is 'form' */}
+                {(itemType === 'form') && (
                   <div className="mb-5">
                     <label htmlFor="itemContent" className="block text-sm font-semibold text-gray-700 mb-2">
-                      Nội dung
+                      Nội dung ghi chú (tùy chọn)
                     </label>
                     <textarea
                       id="itemContent"
@@ -286,7 +275,6 @@ const FormManagement = () => {
                       onChange={(e) => setItemContent(e.target.value)}
                       rows="5"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
                     ></textarea>
                   </div>
                 )}
@@ -303,7 +291,7 @@ const FormManagement = () => {
                           className="form-radio text-blue-600 h-5 w-5"
                           value="form"
                           checked={itemType === 'form'}
-                          onChange={() => {setItemType('form'); setItemContent('');}} // Reset content when switching type
+                          onChange={() => {setItemType('form');}} // Giữ itemContent khi chuyển sang form
                         />
                         <span className="ml-2 text-gray-700">Biểu mẫu</span>
                       </label>
@@ -315,21 +303,9 @@ const FormManagement = () => {
                           className="form-radio text-blue-600 h-5 w-5"
                           value="folder"
                           checked={itemType === 'folder'}
-                          onChange={() => {setItemType('folder'); setItemContent('');}} // Reset content when switching type
+                          onChange={() => {setItemType('folder'); setItemContent('');}} // Reset content khi chuyển sang folder
                         />
                         <span className="ml-2 text-gray-700">Thư mục</span>
-                      </label>
-                      {/* Radio for Ghi chú */}
-                      <label className="inline-flex items-center">
-                        <input
-                          type="radio"
-                          name="itemType"
-                          className="form-radio text-blue-600 h-5 w-5"
-                          value="note"
-                          checked={itemType === 'note'}
-                          onChange={() => setItemType('note')} // Keep content if switching to note
-                        />
-                        <span className="ml-2 text-gray-700">Ghi chú</span>
                       </label>
                     </div>
                   </div>
