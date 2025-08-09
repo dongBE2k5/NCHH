@@ -29,7 +29,7 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
       try {
         const [detailRes, valueRes] = await Promise.all([
           fetch(`${API_BASE_URL}/forms/${selectedId}`),
-          fetch(`${API_BASE_URL}/preview-form/${valueID}`)
+          fetch(`http://nckh.local/api/preview-form/${valueID}`)
         ]);
 
         if (!detailRes.ok || !valueRes.ok) throw new Error("Lỗi khi fetch dữ liệu");
