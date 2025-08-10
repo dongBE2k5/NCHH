@@ -376,6 +376,7 @@ export default function CreateFieldForm() {
                 <option value="text">Text (Văn bản)</option>
                 <option value="email">Email</option>
                 <option value="number">Number (Số)</option>
+                <option value="date">Ngày</option>
                 <option value="textarea">Textarea (Văn bản dài)</option>
                 <option value="checkbox">Checkbox (Hộp kiểm)</option>
                 <option value="radio">Radio (Chọn một)</option>

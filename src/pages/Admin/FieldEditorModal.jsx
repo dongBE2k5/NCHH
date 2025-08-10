@@ -100,6 +100,7 @@ export default function FieldEditorModal({ formInfo, onClose }) {
             <select onChange={(e) => handleCustomFieldChange(index, 'data_type', e.target.value)} value={field.data_type} className= "text-black border border-gray-300 rounded-lg px-3 py-2 w-full text-sm">
                 <option value="text">Text (Văn bản)</option>
                 <option value="email">Email</option>
+                <option value="date">Ngày</option>
                 <option value="number">Number (Số)</option>
                 <option value="textarea">Textarea (Văn bản dài)</option>
                 <option value="checkbox">Checkbox (Hộp kiểm)</option>

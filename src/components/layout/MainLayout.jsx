@@ -9,7 +9,7 @@ const MainLayout = () => {
   return (
     <>
       <Header />
-       <main className="min-h-screen container mx-auto px-4 sm:px-6 lg:px-8 py-24">
+       <main className="min-h-screen mx-auto px-4 sm:px-6 lg:px-0 pt-[72px]">
         <Outlet /> 
       </main>
       <Footer />
