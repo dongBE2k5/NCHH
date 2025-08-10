@@ -169,7 +169,7 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
         html: notification || 'Biểu mẫu của bạn đã được nộp thành công.',
         icon: notification ? 'info' : 'success',
         confirmButtonText: 'Hoàn tất',
-        customClass: { confirmButton: 'swal-button-custom-confirm py-2 px-3 hover:text-white' },
+        customClass: { confirmButton: 'swal-button-custom-confirm py-2 px-3 hover:text-white hover:bg-blue-500 rounded-lg' },
         buttonsStyling: false,
       }).then(() => {
         setIsPreview(false); // Reset chế độ xem trước sau khi gửi thành công

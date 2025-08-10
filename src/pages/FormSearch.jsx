@@ -210,7 +210,7 @@ function FormSearch() {
 
                     <form onSubmit={handleSearch} className="mb-8 flex flex-col sm:flex-row items-center gap-3">
                         <div className="relative w-full sm:flex-grow">
-                            <MagnifyingGlassIcon className="h-5 w-5 text-slate-400 absolute top-1/2 left-4 -translate-y-1/2" />
+                            <MagnifyingGlassIcon className="h-5 w-5 text-slate-400 absolute top-1/2 left-10 -translate-y-1/2" />
                             <input
                                 type="text"
                                 placeholder="Nhập Mã số sinh viên (MSSV)..."
