@@ -133,12 +133,12 @@ export default function ApplicationFormPage() {
             }
             const name = matchedLine.split("[Mã số")[0].trim();
             try {
-                await axios.get(`${API_BASE_URL}/student/search/${studentIdInput.toLowerCase()}`);
-                sessionStorage.setItem(STUDENT_ID_SESSION_KEY, studentIdInput.toLowerCase());
-                setVerifiedStudentId(studentIdInput.toLowerCase());
+                await axios.get(`${API_BASE_URL}/student/search/${studentIdInput}`);
+                sessionStorage.setItem(STUDENT_ID_SESSION_KEY, studentIdInput);
+                setVerifiedStudentId(studentIdInput);
             } catch (checkError) {
                 if (checkError.response?.status === 404) {
-                    setTempNewStudentData({ id: studentIdInput.toLowerCase(), name: name });
+                    setTempNewStudentData({ id: studentIdInput, name: name });
                 } else { throw checkError; }
             }
         } catch (err) {
@@ -160,7 +160,7 @@ export default function ApplicationFormPage() {
         try {
             await axios.post(`${API_BASE_URL}/student`, {
                 name: tempNewStudentData.name,
-                student_code: tempNewStudentData.id.toLowerCase(),
+                student_code: tempNewStudentData.id.,
                 email: studentEmailInput,
             });
             await sendWelcomeEmail(tempNewStudentData.id, tempNewStudentData.name, studentEmailInput);
@@ -293,7 +293,7 @@ export default function ApplicationFormPage() {
                                 <motion.div key="verify" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
                                     <label htmlFor="studentId" className="font-semibold text-slate-700">1. Xác thực MSSV</label>
                                     <input id="studentId" type="text" placeholder="Nhập Mã số sinh viên" value={studentIdInput} onChange={(e) => setStudentIdInput(e.target.value.trim())}
-                                        className="w-full p-2 border-slate-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" disabled={isVerifying}
+                                        className="w-full border-slate-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" disabled={isVerifying}
                                         onKeyDown={(e) => { if (e.key === "Enter") handleVerify(); }} />
                                     {studentIdError && <p className="text-red-600 text-sm">{studentIdError}</p>}
                                     <button onClick={handleVerify} disabled={isVerifying || !studentIdInput}

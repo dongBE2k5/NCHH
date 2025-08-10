@@ -77,18 +77,18 @@ function App() {
           <Route path="forms/:id" element={<FormDetailStudent />} />
           <Route path="forms/:formID/preview-form/:id" element={<PreviewForm />} />
           <Route path="form/submit/:type" element={<FormSubmit />} />
-          <Route path="/download-form-detail/:mssv/:id/:date" element={<FormDetailForDownload />} />
+
           <Route path="/search" element={<FormSearch />} />
           <Route path="/show-form" element={<FormSearch />} />
-
+          <Route path="/print-form-detail/:mssv/:id/:date" element={<FormDetailForPrint />} />
+          <Route path="/download-form-detail/:mssv/:id/:date" element={<FormDetailForDownload />} />
           {/* Bạn có hai route "/forms" và "/form", có thể cân nhắc gộp lại nếu cùng mục đích */}
           <Route path="form" element={<FormListStudent />} />
           <Route path="gui" element={<SubmitApplication />} />
           <Route path="nhan" element={<ReceiveApplication />} />
         </Route>
 
-        <Route path="/search-admin" element={<FormSearch />} />
-        <Route path="/print-form-detail/:mssv/:id/:date" element={<FormDetailForPrint />} />
+     <Route path="/search" element={<FormSearch />} />
         <Route path="/print-template/:type/:id" element={
           <div className="p-10 text-center text-2xl font-bold">
             Đây là trang in cho đơn <span className="text-blue-600">ID: {useParams().id}</span>, loại <span className="text-blue-600">{useParams().type}</span>.

@@ -1,65 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, CheckCircle, Clock, Users, Bell, TrendingUp, BarChart2, Settings, ListChecks } from 'lucide-react';
-
-// Import các service API
-import DashBoardSevice from '../../service/DashBoardSevice'; // Service cho các thẻ thống kê
-import RequestStudentService from '../../service/RequestStudentService'; // Service cho hoạt động gần đây
-
-/**
- * Hàm chuyển đổi chuỗi ngày tháng thành định dạng "thời gian tương đối" (ví dụ: "5 phút trước")
- * @param {string} dateString - Chuỗi ngày tháng từ API (ví dụ: "2023-10-27T10:00:00.000Z")
- * @returns {string} - Chuỗi thời gian tương đối
- */
-const timeAgo = (dateString) => {
-    if (!dateString) return '';
-    const now = new Date();
-    const past = new Date(dateString);
-    const seconds = Math.floor((now - past) / 1000);
-
-    let interval = seconds / 31536000; // năm
-    if (interval > 1) return Math.floor(interval) + " năm trước";
-    
-    interval = seconds / 2592000; // tháng
-    if (interval > 1) return Math.floor(interval) + " tháng trước";
-    
-    interval = seconds / 86400; // ngày
-    if (interval > 1) return Math.floor(interval) + " ngày trước";
-    
-    interval = seconds / 3600; // giờ
-    if (interval > 1) return Math.floor(interval) + " giờ trước";
-    
-    interval = seconds / 60; // phút
-    if (interval > 1) return Math.floor(interval) + " phút trước";
-
-    return "vài giây trước";
-};
-
-/**
- * Hàm ánh xạ trạng thái từ API sang trạng thái và loại được sử dụng trong UI
- * @param {string} apiStatus - Trạng thái từ API (ví dụ: "Đang chờ duyệt")
- * @returns {{status: string, type: string}} - Object chứa status và type cho UI
- */
-const mapApiStatusToUi = (apiStatus) => {
-    switch (apiStatus) {
-        case 'Đang chờ duyệt':
-            return { status: 'pending', type: 'Đơn mới' };
-        case 'Đã duyệt':
-            return { status: 'approved', type: 'Đã duyệt' };
-        case 'Bổ sung':
-            return { status: 'pending', type: 'Cập nhật' }; // Vẫn là pending nhưng type khác
-        case 'Đã hủy':
-            return { status: 'deleted', type: 'Đã hủy' };
-        default:
-            return { status: 'default', type: 'Khác' };
-    }
-};
-
+import Re
+// Import DashBoardSevice
+import DashBoardSevice from '../../service/DashBoardSevice';// <-- Đảm bảo đường dẫn này chính xác
 
 const DashboardAdmin = () => {
     const navigate = useNavigate();
 
-    // State cho các thẻ thống kê
     const [stats, setStats] = useState({
         totalForms: 0,
         pendingForms: 0,
@@ -67,7 +15,6 @@ const DashboardAdmin = () => {
         totalUsers: 0,
     });
 
-    // State cho danh sách hoạt động gần đây
     const [recentActivities, setRecentActivities] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -77,46 +24,36 @@ const DashboardAdmin = () => {
             setLoading(true);
             setError(null);
             try {
-                // Gọi song song tất cả các API để tăng tốc độ tải trang
+                // Gọi API song song để tăng hiệu suất bằng Promise.all
                 const [
-                    statsData,
-                    activitiesData
+                    totalFormsData,
+                    pendingFormsData,
+                    approvedFormsData,
+                    totalUsersData
                 ] = await Promise.all([
-                    // Gọi các API thống kê
-                    Promise.all([
-                        DashBoardSevice.fetchAll(),
-                        DashBoardSevice.fetchWaiting(),
-                        DashBoardSevice.fetchSuccess(),
-                        DashBoardSevice.fetchAccount(),
-                    ]),
-                    // Gọi API lấy hoạt động gần đây
-                    RequestStudentService.fetchAll()
+                    DashBoardSevice.fetchAll(),     // Lấy tổng số đơn
+                    DashBoardSevice.fetchWaiting(), // Lấy đơn đang chờ
+                    DashBoardSevice.fetchSuccess(), // Lấy đơn đã duyệt
+                    DashBoardSevice.fetchAccount(), // Lấy tổng số người dùng
                 ]);
 
-                // Xử lý dữ liệu thống kê
-                const [totalForms, pendingForms, approvedForms, totalUsers] = statsData;
-                setStats({ totalForms, pendingForms, approvedForms, totalUsers });
+                // Cập nhật state với dữ liệu từ API
+                setStats({
+                    totalForms: totalFormsData,
+                    pendingForms: pendingFormsData,
+                    approvedForms: approvedFormsData,
+                    totalUsers: totalUsersData,
+                });
 
-                // Xử lý dữ liệu hoạt động gần đây
-                if (activitiesData && Array.isArray(activitiesData)) {
-                    const formattedActivities = activitiesData
-                        // Sắp xếp theo ngày cập nhật mới nhất
-                        .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
-                        // Chỉ lấy 5 hoạt động đầu tiên
-                        .slice(0, 5)
-                        // Định dạng lại dữ liệu cho phù hợp với UI
-                        .map(item => {
-                            const { status, type } = mapApiStatusToUi(item.status);
-                            return {
-                                id: item.id,
-                                type: type,
-                                description: `"${item.folder_name}" từ sinh viên ${item.student_name || 'N/A'}`,
-                                time: timeAgo(item.updated_at),
-                                status: status,
-                            };
-                        });
-                    setRecentActivities(formattedActivities);
-                }
+                // LƯU Ý: API service của bạn chưa có endpoint cho "Hoạt động gần đây".
+                // Tạm thời vẫn sử dụng dữ liệu giả cho phần này.
+                const fetchedActivities = [
+                    { id: 1, type: 'Đơn mới', description: 'Đơn xin nghỉ học từ Nguyễn Văn A', time: '5 phút trước', status: 'pending' },
+                    { id: 2, type: 'Cập nhật', description: 'Đơn cấp lại thẻ SV của Trần Thị B đã được duyệt', time: '1 giờ trước', status: 'approved' },
+                    { id: 3, type: 'Đơn mới', description: 'Đơn phúc khảo điểm từ Lê Văn C', time: '2 giờ trước', status: 'pending' },
+                    { id: 4, type: 'Xóa', description: 'Mẫu đơn "Khảo sát ý kiến" đã bị xóa', time: '1 ngày trước', status: 'deleted' },
+                ];
+                setRecentActivities(fetchedActivities);
 
             } catch (err) {
                 console.error("Lỗi khi tải dữ liệu dashboard:", err);
@@ -129,7 +66,6 @@ const DashboardAdmin = () => {
         fetchDashboardData();
     }, []);
 
-    // Hàm để lấy màu sắc dựa trên trạng thái hoạt động
     const getActivityStatusColor = (status) => {
         switch (status) {
             case 'pending':
@@ -138,6 +74,8 @@ const DashboardAdmin = () => {
                 return 'text-green-600 bg-green-100';
             case 'deleted':
                 return 'text-red-600 bg-red-100';
+            case 'Cập nhật':
+                return 'text-blue-600 bg-blue-100';
             default:
                 return 'text-gray-600 bg-gray-100';
         }
@@ -165,7 +103,6 @@ const DashboardAdmin = () => {
         );
     }
 
-    // Giao diện không thay đổi
     return (
         <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8 font-sans">
             <div className="max-w-7xl mx-auto">
