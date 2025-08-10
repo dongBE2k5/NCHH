@@ -1,6 +1,6 @@
+// FormSearch.jsx (giữ nguyên như bạn đã cung cấp)
 import React, { useState } from 'react';
-// 1. Import thêm `useLocation` để xác định URL hiện tại
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from "framer-motion";
 import { API_BASE_URL } from '../service/BaseUrl';
@@ -13,7 +13,7 @@ import {
     FolderIcon,
 } from "@heroicons/react/24/solid";
 
-// Component con TimelineItem không thay đổi
+// Component con để hiển thị một mục biểu mẫu trên dòng thời gian (đã loại bỏ nút "Xem chi tiết")
 const TimelineItem = ({ item }) => (
     <motion.div
         layout
@@ -23,6 +23,7 @@ const TimelineItem = ({ item }) => (
         transition={{ duration: 0.3, ease: "easeOut" }}
         className="relative pl-12"
     >
+        {/* Dấu chấm trên dòng thời gian */}
         <div className="absolute left-3 top-1 h-4 w-4 bg-blue-500 rounded-full border-4 border-slate-100"></div>
         <div className="p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
             <p className="font-bold text-slate-800">{item.formName}</p>
@@ -41,9 +42,6 @@ function FormSearch() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
-    
-    // 2. Lấy thông tin về URL hiện tại
-    const location = useLocation();
 
     const handleSearch = async (e) => {
         e.preventDefault();
@@ -62,6 +60,7 @@ function FormSearch() {
             const response = await axios.get(`${API_BASE_URL}/form-value/${searchTerm.trim()}`);
             const data = response.data;
             
+            // Bước 1: Nhóm tất cả kết quả theo ngày
             const groupedByDate = data.reduce((acc, form) => {
                 const date = new Date(form.created_at).toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' });
                 const dateKey = new Date(form.created_at).toISOString().split('T')[0];
@@ -77,6 +76,7 @@ function FormSearch() {
                 return acc;
             }, {});
 
+            // Bước 2: Với mỗi ngày, nhóm các biểu mẫu theo thư mục
             const timelineData = Object.values(groupedByDate).map(dayGroup => {
                 const groupedByFolder = dayGroup.forms.reduce((acc, form) => {
                     const folderId = form.form_type?.folder?.id || 'no-folder';
@@ -106,6 +106,7 @@ function FormSearch() {
                 };
             }).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
 
+
             setResults(timelineData);
 
             if (timelineData.length === 0) {
@@ -130,38 +131,39 @@ function FormSearch() {
         return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
     };
 
-    // 3. Cập nhật hàm handleViewDetail với logic điều hướng mới
     const handleViewDetail = (studentCode, formRequestId, date) => {
+        console.log("studentCode", studentCode);
+        console.log("formRequestId", formRequestId);
+        console.log("date", date);
         if (!studentCode || !formRequestId || !date || studentCode === 'N/A') {
             setError("Không đủ thông tin để xem chi tiết. Vui lòng kiểm tra lại dữ liệu.");
             return;
         }
         const formattedDate = convertDateFormat(date);
-        
-        // Kiểm tra đường dẫn hiện tại để quyết định điều hướng
-        if (location.pathname.includes('/search-admin')) {
-            navigate(`/print-form-detail/${studentCode}/${formRequestId}/${formattedDate}`);
-        } else { // Mặc định cho /search hoặc các đường dẫn khác
-            navigate(`/download-form-detail/${studentCode}/${formRequestId}/${formattedDate}`);
-        }
+        navigate(`/download-form-detail/${studentCode}/${formRequestId}/${formattedDate}`);
     };
     
+    // Hàm render dòng thời gian đã được nâng cấp
     const renderTimeline = (timelineData) => {
         return (
             <div className="relative">
+                {/* Đường kẻ dọc của timeline */}
                 <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-slate-200 -z-10"></div>
                 {timelineData.map((group) => (
                     <div key={group.dateKey} className="mb-8">
+                        {/* Tiêu đề ngày */}
                         <div className="relative pl-12 mb-6">
                              <div className="absolute left-2 top-0 h-6 w-6 bg-slate-100 rounded-full flex items-center justify-center ring-4 ring-slate-50">
-                                 <CalendarDaysIcon className="h-4 w-4 text-slate-500" />
+                                  <CalendarDaysIcon className="h-4 w-4 text-slate-500" />
                              </div>
                             <h3 className="font-bold text-xl text-slate-800 pt-0.5">{group.date}</h3>
                         </div>
 
+                        {/* Nhóm theo thư mục */}
                         <div className="space-y-6">
                             {group.folders && group.folders.map(folder => (
                                 <div key={folder.folderId}>
+                                    {/* Tiêu đề thư mục và nút Xem chi tiết */}
                                     <div className="relative pl-12 mb-4">
                                         <div className="absolute left-3 top-1 h-4 w-4 bg-slate-400 rounded-full border-4 border-slate-100"></div>
                                         <div className="flex items-center justify-between gap-2">
@@ -169,6 +171,7 @@ function FormSearch() {
                                                 <FolderIcon className="h-5 w-5 text-slate-500" />
                                                 <h4 className="font-semibold text-md text-slate-600">{folder.folderName}</h4>
                                             </div>
+                                            {/* Nút "Xem chi tiết" được chuyển lên cấp độ thư mục */}
                                             {folder.forms && folder.forms.length > 0 && (
                                                 <button
                                                     onClick={() => handleViewDetail(folder.forms[0].studentCode, folder.forms[0].formRequestId, folder.forms[0].date)}
@@ -180,6 +183,7 @@ function FormSearch() {
                                             )}
                                         </div>
                                     </div>
+                                    {/* Danh sách các form trong thư mục */}
                                     <div className="space-y-4">
                                         {folder.forms.map(item => (
                                             <TimelineItem key={item.id} item={item} />
@@ -196,7 +200,7 @@ function FormSearch() {
 
     return (
         <div className="font-sans min-h-screen bg-gray-50">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-52 py-10">
+            <div className="container mx-auto px-52 py-10">
                 <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg border border-slate-200">
                     <div className="text-center">
                         <DocumentTextIcon className="h-12 w-12 mx-auto text-blue-600" />

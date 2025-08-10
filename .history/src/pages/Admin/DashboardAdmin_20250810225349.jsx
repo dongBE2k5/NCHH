@@ -110,7 +110,7 @@ const DashboardAdmin = () => {
                             return {
                                 id: item.id,
                                 type: type,
-                                description: `"${item.folder_name}" từ sinh viên ${item.student_name || 'N/A'}`,
+                                description: `"${item.folder_name}" của ${item.student_name || 'N/A'}`,
                                 time: timeAgo(item.updated_at),
                                 status: status,
                             };

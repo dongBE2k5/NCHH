@@ -88,6 +88,7 @@ function App() {
         </Route>
 
         <Route path="/search-admin" element={<FormSearch />} />
+
         <Route path="/print-form-detail/:mssv/:id/:date" element={<FormDetailForPrint />} />
         <Route path="/print-template/:type/:id" element={
           <div className="p-10 text-center text-2xl font-bold">

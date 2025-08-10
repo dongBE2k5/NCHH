@@ -15,8 +15,6 @@ import {
     PrinterIcon // 1. Import thêm icon máy in
 } from '@heroicons/react/24/outline';
 import FormRequestService from '../../service/FormRequestService';
-import axios from 'axios'; // Import axios để gọi API in đơn
-import { API_BASE_URL } from '../../service/BaseUrl'; // Import Base URL
 
 // Component hiển thị trạng thái dưới dạng badge
 const StatusBadge = ({ status }) => {
@@ -45,8 +43,8 @@ function ShowFormRequest() {
     const FORMS_PER_PAGE = 10;
 
     // State cho chức năng tải file và toast
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [processingFormId, setProcessingFormId] = useState(null);
+    const [isLoadingDownload, setIsLoadingDownload] = useState(false);
+    const [loadingFormId, setLoadingFormId] = useState(null);
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
     const [toastType, setToastType] = useState('info');
@@ -90,10 +88,10 @@ function ShowFormRequest() {
         }, 4000);
     };
 
-    // Hàm xử lý tải file (giữ nguyên)
+    // Hàm xử lý tải file
     const handleDownloadFile = async (formRequestId) => {
-        setIsProcessing(true);
-        setProcessingFormId(formRequestId);
+        setIsLoadingDownload(true);
+        setLoadingFormId(formRequestId);
         showCustomToast("Đang xử lý yêu cầu...", "info");
         try {
             const checkResponse = await FormRequestService.getById(formRequestId);
@@ -122,59 +120,11 @@ function ShowFormRequest() {
             console.error("Lỗi trong quá trình tải file:", error);
             showCustomToast(error.message || "Đã có lỗi xảy ra. Vui lòng thử lại.", "error");
         } finally {
-            setIsProcessing(false);
-            setProcessingFormId(null);
+            setIsLoadingDownload(false);
+            setLoadingFormId(null);
         }
     };
     
-    // Hàm xử lý in đơn (logic mới)
-    const handlePrintForm = async (formToPrint) => {
-        setIsProcessing(true);
-        setProcessingFormId(formToPrint.id);
-
-        const newWindow = window.open('', '_blank');
-        if (!newWindow) {
-            showCustomToast("Trình duyệt đã chặn pop-up. Vui lòng cho phép pop-up.", "error");
-            setIsProcessing(false);
-            setProcessingFormId(null);
-            return;
-        }
-        newWindow.document.write('<div style="font-family: sans-serif; text-align: center; padding-top: 50px;"><h1>Đang xử lý, vui lòng đợi...</h1></div>');
-
-        try {
-            if (formToPrint.url_docx) {
-                showCustomToast("Đã có file, đang mở...", "success");
-                newWindow.location.href = formToPrint.url_docx;
-            } else {
-                showCustomToast("File chưa có, đang tạo file mới...", "info");
-                const response = await axios.get(`${API_BASE_URL}/google-drive/generate-upload/${formToPrint.id}`);
-                const result = response.data;
-
-                if (result.success && result.url) {
-                    showCustomToast("Tạo file thành công! Đang chuyển hướng...", "success");
-                    newWindow.location.href = result.url;
-                    
-                    // Cập nhật lại state để lưu url_docx mới
-                    setForms(prevForms =>
-                        prevForms.map(f =>
-                            f.id === formToPrint.id ? { ...f, url_docx: result.url } : f
-                        )
-                    );
-                } else {
-                    throw new Error(result.message || "Lỗi khi tạo và upload file.");
-                }
-            }
-        } catch (error) {
-            console.error("Lỗi khi xử lý in đơn:", error);
-            const errorMessage = error.response?.data?.error || error.message || "Lỗi không xác định.";
-            showCustomToast(`Lỗi: ${errorMessage}`, "error");
-            newWindow.document.write(`<div style="font-family: sans-serif; text-align: center; padding-top: 50px; color: red;"><h1>Lỗi</h1><p>${errorMessage}. Bạn có thể đóng tab này.</p></div>`);
-        } finally {
-            setIsProcessing(false);
-            setProcessingFormId(null);
-        }
-    };
-
     // Hàm lấy UI cho toast
     const getToastClasses = (type) => {
         switch (type) {
@@ -212,6 +162,7 @@ function ShowFormRequest() {
                 </div>
             )}
             <div className="max-w-7xl mx-auto">
+                {/* 2. TẠO FLEX CONTAINER CHO TIÊU ĐỀ VÀ NÚT MỚI */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <h1 className="text-3xl font-bold text-slate-800">Quản lý Đơn từ</h1>
                     <button
@@ -249,10 +200,9 @@ function ShowFormRequest() {
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Thư mục</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">MSSV</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Ngày gửi</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Ngày cập nhật</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tài liệu</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Trạng thái</th>
-                                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">In Đơn</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-slate-200">
@@ -262,17 +212,26 @@ function ShowFormRequest() {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{form.form_type?.name || 'N/A'}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{form.form_type?.folder?.name || 'N/A'}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{form.values?.[0]?.student_code || 'N/A'}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500"> {new Date(form.created_at).toLocaleString("vi-VN")}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500"> {new Date(form.updated_at || form.created_at).toLocaleString("vi-VN")}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500"> {new Date(form.created_at).toLocaleString("vi-VN", {
+                                            timeZone: "Asia/Ho_Chi_Minh",
+                                            day: "2-digit",
+                                            month: "2-digit",
+                                            year: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                            second: "2-digit"
+                                        })}
+                                        </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                                             <div className="flex flex-col gap-2">
                                                 {form.url_docx && <a href={form.url_docx} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:underline"><LinkIcon className="h-4 w-4" /> URL</a>}
+                                                
                                                 <button
                                                     onClick={() => handleDownloadFile(form.id)}
-                                                    disabled={isProcessing && processingFormId === form.id}
+                                                    disabled={isLoadingDownload && loadingFormId === form.id}
                                                     className="inline-flex items-center gap-1.5 text-blue-600 hover:underline disabled:opacity-50 disabled:cursor-wait text-left"
                                                 >
-                                                    {isProcessing && processingFormId === form.id ? (
+                                                    {isLoadingDownload && loadingFormId === form.id ? (
                                                         <svg className="animate-spin h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -282,26 +241,17 @@ function ShowFormRequest() {
                                                     )}
                                                     Tải File
                                                 </button>
+                                                
                                                 {!form.url_docx && !form.file_docx && <span>Không có</span>}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm"><StatusBadge status={form.status} /></td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                            <button
-                                                onClick={() => handlePrintForm(form)}
-                                                disabled={isProcessing && processingFormId === form.id}
-                                                className="p-2 bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200 transition duration-150 ease-in-out shadow-sm disabled:opacity-50 disabled:cursor-wait"
-                                                title="In đơn"
-                                            >
-                                                {isProcessing && processingFormId === form.id ? (
-                                                     <svg className="animate-spin h-5 w-5 text-indigo-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                    </svg>
-                                                ) : (
-                                                    <PrinterIcon className="h-5 w-5" />
-                                                )}
-                                            </button>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <div className="flex items-center gap-3">
+                                                <button className="text-blue-600 hover:text-blue-900" title="Xem"><EyeIcon className="h-5 w-5" /></button>
+                                                <button className="text-slate-600 hover:text-slate-900" title="Sửa"><PencilIcon className="h-5 w-5" /></button>
+                                                <button className="text-red-600 hover:text-red-900" title="Xóa"><TrashIcon className="h-5 w-5" /></button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
