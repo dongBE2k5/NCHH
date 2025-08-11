@@ -147,7 +147,7 @@ export default function ApplicationFormPage() {
         text: `Chào mừng ${studentName}! Một email chào mừng đã được gửi đến ${studentEmail}.`,
         confirmButtonText: 'Đã hiểu',
         customClass: {
-          confirmButton: 'swal-button-custom-confirm py-2 px-3 hover:text-white',
+          confirmButton: 'swal-button-custom-confirm py-2 px-3 hover:text-white hover:bg-blue-500 rounded-lg',
         },
         buttonsStyling: false,
       });
@@ -220,7 +220,7 @@ export default function ApplicationFormPage() {
             text: `MSSV ${studentIdInput} của bạn đã được xác thực. Vui lòng nhập email để hoàn tất đăng ký.`,
             confirmButtonText: 'Tiếp tục',
             customClass: {
-              confirmButton: 'swal-button-custom-confirm py-2 px-3 hover:text-white',
+              confirmButton: 'swal-button-custom-confirm py-2 px-3 hover:text-white hover:bg-blue-500 rounded-lg',
             },
             buttonsStyling: false,
           });

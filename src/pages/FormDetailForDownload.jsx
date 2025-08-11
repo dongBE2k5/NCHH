@@ -159,20 +159,20 @@ function FormDetailPage() {
                                 <tbody className="bg-white divide-y divide-slate-200">
                                     {forms.map((form) => (
 
-                                        <tr key={form.id} className="hover:bg-slate-50/70 transition-colors duration-200">
+                                        <tr key={form.id} className="hover:bg-slate-50/70 text-start transition-colors duration-200">
                                             <td className="px-5 py-4 whitespace-nowrap">
                                                 <div className="text-sm font-medium text-slate-800 ">{form.form_type?.name}</div>
                                                 <div className="text-xs text-slate-500">ID: {form.id}</div>
                                             </td>
                                             <td className="px-5 py-4 whitespace-nowrap text-sm text-slate-600">{form.created_at?.split('T')[0] || 'N/A'}</td>
                                             <td className="px-5 py-4 whitespace-nowrap text-center text-sm font-medium space-x-3">
-                                                <button
+                                                {/* <button
                                                     onClick={() => { setModal(true); setFormId(form.type_of_form_id); setValueId(form.id); }}
                                                     className="inline-flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-md text-xs font-semibold transition-all"
                                                 >
                                                     <PencilIcon className="h-3.5 w-3.5" />
                                                     Sửa
-                                                </button>
+                                                </button> */}
                                                 <button
                                                     onClick={() => handleDownloadForm(form.id)}
                                                     className={`inline-flex items-center justify-center gap-1.5 bg-teal-500 hover:bg-teal-600 text-white px-3 py-1.5 rounded-md text-xs font-semibold shadow-sm transition-all ${isLoadingDownload && loadingFormId === form.id ? 'opacity-70 cursor-not-allowed' : ''}`}

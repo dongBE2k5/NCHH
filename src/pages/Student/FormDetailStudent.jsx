@@ -169,7 +169,7 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
         html: notification || 'Biểu mẫu của bạn đã được nộp thành công.',
         icon: notification ? 'info' : 'success',
         confirmButtonText: 'Hoàn tất',
-        customClass: { confirmButton: 'swal-button-custom-confirm py-2 px-3 hover:text-white' },
+        customClass: { confirmButton: 'swal-button-custom-confirm py-2 px-3 hover:text-white hover:bg-blue-500 rounded-lg' },
         buttonsStyling: false,
       }).then(() => {
         setIsPreview(false); // Reset chế độ xem trước sau khi gửi thành công
@@ -283,7 +283,22 @@ export default function FormDetailStudent({ selectedId, isEdit = false, valueID 
                       readOnly={isPreview} // Thêm thuộc tính readOnly
                     />
                   )}
-
+                  {field.data_type === "email" && (
+                    <input
+                      id={`field-${field.id}`}
+                      type="mail"
+                      className="w-full !max-w-full border border-gray-300 px-4 py-2.5 rounded-lg
+                                            focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none
+                                            transition-all duration-300 text-gray-800 placeholder-gray-400 text-base
+                                            read-only:bg-gray-50 read-only:border-gray-200 read-only:text-gray-600 read-only:cursor-not-allowed"
+                      value={formState[field.id] || ""}
+                      onChange={(e) => handleChange(field.id, e.target.value)}
+                      required={field.is_required}
+                      placeholder={`Nhập ${field.label.toLowerCase()}`}
+                      readOnly={isPreview} // Thêm thuộc tính readOnly
+                    />
+                  )}
+                  
                   {field.data_type === "number" && (
                     <input
                       id={`field-${field.id}`}
