@@ -17,8 +17,8 @@ function FormRequest() {
     const [filterStatus, setFilterStatus] = useState("Tất cả");
     const [filterFormName, setFilterFormName] = useState("Tất cả");
     const [selectedFormIds, setSelectedFormIds] = useState([]);
-    const [sortColumn, setSortColumn] = useState('updatedDate'); // Sắp xếp mặc định
-    const [sortDirection, setSortDirection] = useState('desc'); // Sắp xếp mới nhất trước
+    const [sortColumn, setSortColumn] = useState(null);
+    const [sortDirection, setSortDirection] = useState('asc');
     const [hasPendingChanges, setHasPendingChanges] = useState(false);
     const [showNotificationModal, setShowNotificationModal] = useState(false);
     const [notification, setNotification] = useState({
@@ -51,9 +51,9 @@ function FormRequest() {
     const [successModalMessage, setSuccessModalMessage] = useState('');
     const [showQuickAddModal, setShowQuickAddModal] = useState(false);
 
-    // State cho phân trang
+    // === 1. THÊM STATE CHO PHÂN TRANG ===
     const [currentPage, setCurrentPage] = useState(1);
-    const ITEMS_PER_PAGE = 10;
+    const ITEMS_PER_PAGE = 10; // Số mục trên mỗi trang
 
     useEffect(() => {
         const fetchFolderNames = async () => {
@@ -115,6 +115,8 @@ function FormRequest() {
         setShowToast(true);
         setTimeout(() => {
             setShowToast(false);
+            setToastMessage('');
+            setToastType('info');
         }, 4000);
     };
 
@@ -167,6 +169,7 @@ function FormRequest() {
         setFilteredForms(currentFilteredForms);
     }, [searchTerm, filterStatus, filterFormName, stagedForms, sortColumn, sortDirection]);
 
+    // === 2. TÍNH TOÁN DỮ LIỆU CHO TRANG HIỆN TẠI ===
     const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
     const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
     const currentItems = filteredForms.slice(indexOfFirstItem, indexOfLastItem);
@@ -179,6 +182,7 @@ function FormRequest() {
     };
 
     const handleSelectAllForms = (isChecked) => {
+        // Chỉ chọn tất cả các mục trên trang hiện tại
         const idsOnCurrentPage = currentItems.map(form => form.id);
         if (isChecked) {
             const newSelectedIds = [...new Set([...selectedFormIds, ...idsOnCurrentPage])];
@@ -299,6 +303,7 @@ function FormRequest() {
                 notification.content,
                 finalStudentCodes
             );
+            console.log(response);
             if (response.success) {
                 setShowNotificationModal(false);
                 setNotification({ recipient: '', title: '', content: '', student_codes_array: [] });
@@ -665,7 +670,7 @@ function FormRequest() {
                         value={searchTerm}
                         onChange={(e) => {
                             setSearchTerm(e.target.value);
-                            setCurrentPage(1);
+                            setCurrentPage(1); // Reset về trang 1 khi tìm kiếm
                         }}
                     />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -674,7 +679,7 @@ function FormRequest() {
                             value={filterStatus}
                             onChange={(e) => {
                                 setFilterStatus(e.target.value);
-                                setCurrentPage(1);
+                                setCurrentPage(1); // Reset về trang 1 khi lọc
                             }}
                         >
                             <option value="Tất cả">Tất cả trạng thái</option>
@@ -688,7 +693,7 @@ function FormRequest() {
                             value={filterFormName}
                             onChange={(e) => {
                                 setFilterFormName(e.target.value);
-                                setCurrentPage(1);
+                                setCurrentPage(1); // Reset về trang 1 khi lọc
                             }}
                         >
                             <option value="Tất cả">Tất cả biểu mẫu</option>
@@ -721,7 +726,7 @@ function FormRequest() {
                 )}
                 <Table
                     headers={["ID đơn", "Tên sinh viên", "MSSV", "Tên biểu mẫu", "Ngày nộp", "Ngày cập nhật", "Trạng thái", "Hành động"]}
-                    data={currentItems} 
+                    data={currentItems} // << 3. TRUYỀN DỮ LIỆU ĐÃ PHÂN TRANG VÀO BẢNG
                     onUpdateStatus={handleUpdateSingleFormStatus}
                     selectable={true}
                     selectedItems={selectedFormIds}
@@ -734,6 +739,7 @@ function FormRequest() {
                     onDelete={handleDeleteForm}
                 />
                 
+                {/* === 4. THÊM GIAO DIỆN PHÂN TRANG === */}
                 {totalPages > 1 && (
                     <div className="py-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 mt-2">
                         <span className="text-sm text-gray-700">
@@ -760,8 +766,7 @@ function FormRequest() {
                         </div>
                     </div>
                 )}
-
-                {showNotificationModal && (
+        {showNotificationModal && (
                     <div className="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity duration-300">
                         <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg relative transform transition-all duration-300 scale-95 opacity-0 animate-fade-in-scale">
                             <button onClick={() => setShowNotificationModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition"><XMarkIcon className="h-6 w-6" /></button>
@@ -892,25 +897,11 @@ function FormRequest() {
                 folders={availableFormNames}
             />
         </div>
+            </div>
+        </div>
     );
 }
 
 export default FormRequest;
 
-const style = document.createElement('style');
-style.innerHTML = `
-  @keyframes fade-in-scale {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-  .animate-fade-in-scale {
-    animation: fade-in-scale 0.3s ease-out forwards;
-  }
-`;
-document.head.appendChild(style);
+// ... style giữ nguyên ...

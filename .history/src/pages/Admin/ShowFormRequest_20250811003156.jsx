@@ -61,7 +61,7 @@ function ShowFormRequest() {
                 setLoading(true);
                 const response = await FormRequestService.fetchData();
                 setForms(response || []);
-            } catch (err) { // << LỖI ĐÃ ĐƯỢC SỬA Ở ĐÂY (thêm dấu { )
+            } catch (err)
                 setError('Không thể tải dữ liệu. Vui lòng thử lại.');
                 console.error(err);
             } finally {
@@ -402,6 +402,6 @@ function ShowFormRequest() {
             </div>
         </div>
     );
-}
+
 
 export default ShowFormRequest;

@@ -61,7 +61,7 @@ function ShowFormRequest() {
                 setLoading(true);
                 const response = await FormRequestService.fetchData();
                 setForms(response || []);
-            } catch (err) { // << LỖI ĐÃ ĐƯỢC SỬA Ở ĐÂY (thêm dấu { )
+            } catch (err)
                 setError('Không thể tải dữ liệu. Vui lòng thử lại.');
                 console.error(err);
             } finally {
@@ -76,8 +76,7 @@ function ShowFormRequest() {
         let sortableForms = [...forms];
 
         // Lọc theo từ khóa tìm kiếm
-        if (searchTerm) {
-            sortableForms = sortableForms.filter(form => {
+        if (searchTerm) {a{
                 const studentCode = form.values?.[0]?.student_code || '';
                 const formName = form.form_type?.name || '';
                 const folderName = form.form_type?.folder?.name || '';
@@ -402,6 +401,6 @@ function ShowFormRequest() {
             </div>
         </div>
     );
-}
+
 
 export default ShowFormRequest;

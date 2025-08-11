@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Table from "../components/Table";
 import axios from 'axios';
-import { XMarkIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
+import { XMarkIcon } from '@heroicons/react/20/solid';
 import { CheckCircleIcon, ExclamationCircleIcon, InformationCircleIcon, PlusCircleIcon, BellAlertIcon, TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { API_BASE_URL } from '../service/BaseUrl';
 import QuickAddFormRequest from "./QuickAddFormRequest";
@@ -17,8 +17,8 @@ function FormRequest() {
     const [filterStatus, setFilterStatus] = useState("Tất cả");
     const [filterFormName, setFilterFormName] = useState("Tất cả");
     const [selectedFormIds, setSelectedFormIds] = useState([]);
-    const [sortColumn, setSortColumn] = useState('updatedDate'); // Sắp xếp mặc định
-    const [sortDirection, setSortDirection] = useState('desc'); // Sắp xếp mới nhất trước
+    const [sortColumn, setSortColumn] = useState(null);
+    const [sortDirection, setSortDirection] = useState('asc');
     const [hasPendingChanges, setHasPendingChanges] = useState(false);
     const [showNotificationModal, setShowNotificationModal] = useState(false);
     const [notification, setNotification] = useState({
@@ -51,10 +51,6 @@ function FormRequest() {
     const [successModalMessage, setSuccessModalMessage] = useState('');
     const [showQuickAddModal, setShowQuickAddModal] = useState(false);
 
-    // State cho phân trang
-    const [currentPage, setCurrentPage] = useState(1);
-    const ITEMS_PER_PAGE = 10;
-
     useEffect(() => {
         const fetchFolderNames = async () => {
             try {
@@ -81,6 +77,7 @@ function FormRequest() {
                     mssv: item.student_code,
                     name: item.folder_name,
                     date: new Date(item.created_at).toLocaleDateString("vi-VN"),
+                    // << SỬA LỖI Ở ĐÂY: Nếu item.updated_at là null, sẽ dùng item.created_at >>
                     updatedDate: new Date(item.updated_at || item.created_at).toLocaleDateString("vi-VN"),
                     status: item.status ?? "Đang chờ duyệt"
                 }));
@@ -115,6 +112,8 @@ function FormRequest() {
         setShowToast(true);
         setTimeout(() => {
             setShowToast(false);
+            setToastMessage('');
+            setToastType('info');
         }, 4000);
     };
 
@@ -167,11 +166,6 @@ function FormRequest() {
         setFilteredForms(currentFilteredForms);
     }, [searchTerm, filterStatus, filterFormName, stagedForms, sortColumn, sortDirection]);
 
-    const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
-    const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
-    const currentItems = filteredForms.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(filteredForms.length / ITEMS_PER_PAGE);
-
     const handleSelectForm = (id, isChecked) => {
         setSelectedFormIds(prevIds =>
             isChecked ? [...prevIds, id] : prevIds.filter(formId => formId !== id)
@@ -179,13 +173,7 @@ function FormRequest() {
     };
 
     const handleSelectAllForms = (isChecked) => {
-        const idsOnCurrentPage = currentItems.map(form => form.id);
-        if (isChecked) {
-            const newSelectedIds = [...new Set([...selectedFormIds, ...idsOnCurrentPage])];
-            setSelectedFormIds(newSelectedIds);
-        } else {
-            setSelectedFormIds(selectedFormIds.filter(id => !idsOnCurrentPage.includes(id)));
-        }
+        setSelectedFormIds(isChecked ? filteredForms.map(form => form.id) : []);
     };
 
     const handleBulkUpdateStatus = (newStatus) => {
@@ -299,6 +287,7 @@ function FormRequest() {
                 notification.content,
                 finalStudentCodes
             );
+            console.log(response);
             if (response.success) {
                 setShowNotificationModal(false);
                 setNotification({ recipient: '', title: '', content: '', student_codes_array: [] });
@@ -663,19 +652,13 @@ function FormRequest() {
                         placeholder="Tìm kiếm theo tên sinh viên, MSSV, hoặc tên biểu mẫu..."
                         className="p-3 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-900"
                         value={searchTerm}
-                        onChange={(e) => {
-                            setSearchTerm(e.target.value);
-                            setCurrentPage(1);
-                        }}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <select
                             className="p-3 border border-gray-300 rounded-lg w-full cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white text-gray-900"
                             value={filterStatus}
-                            onChange={(e) => {
-                                setFilterStatus(e.target.value);
-                                setCurrentPage(1);
-                            }}
+                            onChange={(e) => setFilterStatus(e.target.value)}
                         >
                             <option value="Tất cả">Tất cả trạng thái</option>
                             <option value="Đang chờ duyệt">Đang chờ duyệt</option>
@@ -686,10 +669,7 @@ function FormRequest() {
                         <select
                             className="p-3 border border-gray-300 rounded-lg w-full cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white text-gray-900"
                             value={filterFormName}
-                            onChange={(e) => {
-                                setFilterFormName(e.target.value);
-                                setCurrentPage(1);
-                            }}
+                            onChange={(e) => setFilterFormName(e.target.value)}
                         >
                             <option value="Tất cả">Tất cả biểu mẫu</option>
                             {availableFormNames.map(form => (
@@ -721,7 +701,7 @@ function FormRequest() {
                 )}
                 <Table
                     headers={["ID đơn", "Tên sinh viên", "MSSV", "Tên biểu mẫu", "Ngày nộp", "Ngày cập nhật", "Trạng thái", "Hành động"]}
-                    data={currentItems} 
+                    data={filteredForms}
                     onUpdateStatus={handleUpdateSingleFormStatus}
                     selectable={true}
                     selectedItems={selectedFormIds}
@@ -733,34 +713,6 @@ function FormRequest() {
                     onEdit={handleOpenEditFormModal}
                     onDelete={handleDeleteForm}
                 />
-                
-                {totalPages > 1 && (
-                    <div className="py-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 mt-2">
-                        <span className="text-sm text-gray-700">
-                            Hiển thị <strong>{indexOfFirstItem + 1}</strong> - <strong>{Math.min(indexOfLastItem, filteredForms.length)}</strong> trên <strong>{filteredForms.length}</strong> kết quả
-                        </span>
-                        <div className="inline-flex items-center -space-x-px rounded-md shadow-sm border border-gray-300">
-                            <button
-                                onClick={() => setCurrentPage(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                            >
-                                <ChevronLeftIcon className="h-5 w-5" />
-                            </button>
-                            <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 border-y border-gray-300 bg-white">
-                                Trang {currentPage} / {totalPages}
-                            </span>
-                            <button
-                                onClick={() => setCurrentPage(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                            >
-                                <ChevronRightIcon className="h-5 w-5" />
-                            </button>
-                        </div>
-                    </div>
-                )}
-
                 {showNotificationModal && (
                     <div className="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity duration-300">
                         <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg relative transform transition-all duration-300 scale-95 opacity-0 animate-fade-in-scale">

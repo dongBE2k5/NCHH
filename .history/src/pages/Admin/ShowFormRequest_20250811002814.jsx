@@ -61,7 +61,7 @@ function ShowFormRequest() {
                 setLoading(true);
                 const response = await FormRequestService.fetchData();
                 setForms(response || []);
-            } catch (err) { // << LỖI ĐÃ ĐƯỢC SỬA Ở ĐÂY (thêm dấu { )
+            } catch (err) {
                 setError('Không thể tải dữ liệu. Vui lòng thử lại.');
                 console.error(err);
             } finally {
@@ -103,10 +103,10 @@ function ShowFormRequest() {
                 } else if (sortConfig.key === 'student_code') {
                     aValue = a.values?.[0]?.student_code || '';
                     bValue = b.values?.[0]?.student_code || '';
-                } else if (sortConfig.key === 'updated_at' || sortConfig.key === 'created_at') {
+                } else if (sortConfig.key === 'updated_at') {
                     // Ưu tiên `updated_at`, nếu không có thì dùng `created_at`
-                    aValue = new Date(a[sortConfig.key] || a.created_at);
-                    bValue = new Date(b[sortConfig.key] || b.created_at);
+                    aValue = new Date(a.updated_at || a.created_at);
+                    bValue = new Date(b.updated_at || b.created_at);
                 }
 
                 if (aValue < bValue) {
@@ -367,32 +367,22 @@ function ShowFormRequest() {
                                 ))}
                             </tbody>
                         </table>
-                        {processedForms.length === 0 && !loading && (
+                        {processedForms.length === 0 && (
                             <div className="text-center py-8 text-slate-500">Không tìm thấy đơn từ nào.</div>
                         )}
                     </div>
 
                     {totalPages > 1 && (
-                        <div className="py-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-200 mt-2">
+                        <div className="py-4 flex items-center justify-between">
                             <span className="text-sm text-slate-700">
-                                Hiển thị <strong>{indexOfFirstForm + 1}</strong> - <strong>{Math.min(indexOfLastForm, processedForms.length)}</strong> trên <strong>{processedForms.length}</strong> kết quả
+                                Hiển thị {indexOfFirstForm + 1} - {Math.min(indexOfLastForm, processedForms.length)} của {processedForms.length} kết quả
                             </span>
-                            <div className="inline-flex items-center -space-x-px rounded-md shadow-sm border border-slate-300">
-                                <button
-                                    onClick={() => paginate(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                    className="relative inline-flex items-center rounded-l-md px-2 py-2 text-slate-500 hover:bg-slate-50 disabled:opacity-50"
-                                >
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} className="p-2 rounded-md hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">
                                     <ChevronLeftIcon className="h-5 w-5" />
                                 </button>
-                                <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-700 border-y border-slate-300 bg-white">
-                                    Trang {currentPage} / {totalPages}
-                                </span>
-                                <button
-                                    onClick={() => paginate(currentPage + 1)}
-                                    disabled={currentPage === totalPages}
-                                    className="relative inline-flex items-center rounded-r-md px-2 py-2 text-slate-500 hover:bg-slate-50 disabled:opacity-50"
-                                >
+                                <span className="text-sm font-medium">{currentPage} / {totalPages}</span>
+                                <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 rounded-md hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">
                                     <ChevronRightIcon className="h-5 w-5" />
                                 </button>
                             </div>
